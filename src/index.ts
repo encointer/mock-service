@@ -3,7 +3,6 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { encointer_rpc_endpoint } from "./consts";
 
 async function main() {
-    // instantiate Server and start listening for requests
     var server = new WebSocketServer({
         port: 8080,
         host: "localhost",
@@ -25,6 +24,4 @@ async function main() {
 
 (async () => {
     await main();
-})().catch((e) => {
-    console.log(e)
-});
+})();
