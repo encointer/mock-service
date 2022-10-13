@@ -1,4 +1,4 @@
-import { ParticipantNotRegistered, WrongPhaseForClaimingRewards, WrongPhaseForRegistering, WrongPhaseForSubmittingAttestations } from "../errors";
+import { InsufficientBalance, ParticipantNotRegistered, WrongPhaseForClaimingRewards, WrongPhaseForRegistering, WrongPhaseForSubmittingAttestations } from "../errors";
 import { Phase, Address, ParticipantRole, AttestationArray, CommunityObject } from "../types";
 import { getParticipantsEligibleForReward } from "./meetupValidation";
 
@@ -57,5 +57,12 @@ export function claimRewards(communityObject: CommunityObject) {
         else communityObject.participants[p] = communityObject.income;
     }
     communityObject.ceremonies = ceremonies;
+    return communityObject;
+}
+
+export function transfer(communityObject: CommunityObject, from: Address, to: Address, amount: number) {
+    if(!(from in communityObject.participants) || communityObject.participants[from] - amount < 0) throw new InsufficientBalance();
+    communityObject.participants[from] -= amount;
+    communityObject.participants[to] += amount;
     return communityObject;
 }

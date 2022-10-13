@@ -18,3 +18,7 @@ export class WrongPhaseForClaimingRewards extends Error {
 export class ParticipantNotRegistered extends Error {
     message = "Participant is not registered.";
 }
+
+export class InsufficientBalance extends Error {
+    message = "Insufficient balance";
+}
