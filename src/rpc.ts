@@ -1,6 +1,6 @@
 import { Server as WebSocketServer } from "rpc-websockets";
 import { ApiPromise } from "@polkadot/api";
-import { advancePhase } from "./lib/community";
+import { advancePhase } from "./lib/runtime";
 import { getCommunityObject, putCommunityObject } from "./db";
 
 async function getResultOrErr<T>(promise: Promise<T>) {

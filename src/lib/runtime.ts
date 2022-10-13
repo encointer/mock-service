@@ -109,6 +109,17 @@ export function transfer(
     return communityObject;
 }
 
+export function transferAll(
+    communityObject: CommunityObject,
+    from: Address,
+    to: Address
+) {
+    if (!(from in communityObject.participants)) return;
+    communityObject.participants[to] += communityObject.participants[from];
+    communityObject.participants[from] = 0;
+    return communityObject;
+}
+
 export function getBalance(
     communityObject: CommunityObject,
     participant: Address
@@ -118,7 +129,7 @@ export function getBalance(
 }
 
 export async function newCommunity(cid: CommunityIdentifier) {
-    if(await getCommunityObject(cid)) throw new CommuniyAlreadyExists();
+    if (await getCommunityObject(cid)) throw new CommuniyAlreadyExists();
     const communityObject: CommunityObject = {
         currentPhase: "registering",
         income: 10,
