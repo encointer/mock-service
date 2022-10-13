@@ -22,3 +22,7 @@ export class ParticipantNotRegistered extends Error {
 export class InsufficientBalance extends Error {
     message = "Insufficient balance";
 }
+
+export class CommuniyAlreadyExists extends Error {
+    message = "Commmunity already exists";
+}
