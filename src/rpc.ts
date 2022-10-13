@@ -1,15 +1,15 @@
 import { Server as WebSocketServer } from "rpc-websockets";
 import { ApiPromise } from "@polkadot/api";
 import { advancePhase } from "./lib/community";
+import { getCommunityObject, putCommunityObject } from "./db";
 
 async function getResultOrErr<T>(promise: Promise<T>) {
     try {
         return await promise;
     } catch (e) {
-        let message = 'Unknown Error'
-        if (e instanceof Error) message = e.message
-        return {error: message}
-        
+        let message = "Unknown Error";
+        if (e instanceof Error) message = e.message;
+        return { error: message };
     }
 }
 
@@ -27,6 +27,14 @@ export function register_rpc_methods(server: WebSocketServer, api: ApiPromise) {
     });
 
     server.register("advancePhase", async function (params) {
-        return getResultOrErr(advancePhase(params[0]));
+        return getResultOrErr(
+            (async () => {
+                let cid = params[0];
+                let communityObject = await getCommunityObject(cid);
+                communityObject = advancePhase(communityObject);
+                await putCommunityObject(cid, communityObject);
+                return communityObject.currentPhase;
+            })()
+        );
     });
 }

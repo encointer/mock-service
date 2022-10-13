@@ -1,24 +1,20 @@
-import { getCommunityObject, putCommunityObject } from "../db";
 import { ParticipantNotRegistered, WrongPhaseForClaimingRewards, WrongPhaseForRegistering, WrongPhaseForSubmittingAttestations } from "../errors";
-import { CommunityIdentifier, Phase, Address, ParticipantRole, Attestations, AttestationArray } from "../types";
+import { Phase, Address, ParticipantRole, AttestationArray, CommunityObject } from "../types";
 import { getParticipantsEligibleForReward } from "./meetupValidation";
 
-export async function advancePhase(cid: CommunityIdentifier) {
-    let communityObject = await getCommunityObject(cid);
+export function advancePhase(communityObject: CommunityObject) {
     let phase = communityObject.currentPhase;
     const phases: Phase[] = ["registering", "assigning", "attesting"];
     let nextPhase = phases[(phases.indexOf(phase) + 1) % 3];
     if (nextPhase === 'attesting') {
         // create a new ceremony such that people can already register for the next ceremony.
-        initCeremony(cid);
+        initCeremony(communityObject);
     }
     communityObject.currentPhase = nextPhase;
-    await putCommunityObject(cid, communityObject);
-    return nextPhase;
+    return communityObject;
 }
 
-async function initCeremony(cid: CommunityIdentifier) {
-    let communityObject = await getCommunityObject(cid);
+function initCeremony(communityObject: CommunityObject) {
     let ceremonies = communityObject.ceremonies;
     ceremonies.push({
         participants: {},
@@ -27,30 +23,27 @@ async function initCeremony(cid: CommunityIdentifier) {
         participantsEligibleForReward: []
     })
     communityObject.ceremonies = ceremonies;
-    await putCommunityObject(cid, communityObject);
+    return communityObject;
 }
 
-export async function registerParticipant(cid: CommunityIdentifier, participant: Address, role: ParticipantRole) {
-    let communityObject = await getCommunityObject(cid);
+export function registerParticipant(communityObject: CommunityObject, participant: Address, role: ParticipantRole) {
     if(communityObject.currentPhase === 'assigning') throw new WrongPhaseForRegistering();
     let ceremonies = communityObject.ceremonies;
     ceremonies[ceremonies.length - 1].participants[participant] = role;
     communityObject.ceremonies = ceremonies;
-    await putCommunityObject(cid, communityObject);
+    return communityObject;
 }
 
-export async function submitAttestations(cid: CommunityIdentifier, participant: Address, attestations: AttestationArray) {
-    let communityObject = await getCommunityObject(cid);
+export function submitAttestations(communityObject: CommunityObject, participant: Address, attestations: AttestationArray) {
     if(communityObject.currentPhase !== 'attesting') throw new WrongPhaseForSubmittingAttestations();
     if(!(participant in communityObject.participants)) throw new ParticipantNotRegistered();
     let ceremonies = communityObject.ceremonies;
     ceremonies[ceremonies.length - 2].attestations[participant] = attestations;
     communityObject.ceremonies = ceremonies;
-    await putCommunityObject(cid, communityObject);
+    return communityObject;
 }
 
-export async function claimRewards(cid: CommunityIdentifier) {
-    let communityObject = await getCommunityObject(cid);
+export function claimRewards(communityObject: CommunityObject) {
     // early rewards not possible for simplicity
     if(communityObject.currentPhase !== 'registering') throw new WrongPhaseForClaimingRewards();
     let ceremonies = communityObject.ceremonies;
@@ -64,5 +57,5 @@ export async function claimRewards(cid: CommunityIdentifier) {
         else communityObject.participants[p] = communityObject.income;
     }
     communityObject.ceremonies = ceremonies;
-    await putCommunityObject(cid, communityObject);
+    return communityObject;
 }
