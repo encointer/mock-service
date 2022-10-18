@@ -1,17 +1,62 @@
-export function getStorage(key: string) {
+import { ApiPromise } from "@polkadot/api";
+
+export function getStorage(api: ApiPromise, key: string) {
     key = key.substring(2);
     let module = key.substring(0, 32);
     let method = key.substring(32, 64);
     let params = key.substring(64);
     try {
         console.log(modules[module][method].name);
+        modules[module][method](api, params);
     } catch (e) {
+        console.log(e);
         console.log("-----");
         console.log("ERROR");
         console.log(module);
         console.log(method);
         console.log("-----");
     }
+}
+
+function LEToNum(hex: string) {
+    return Buffer.from(hex.substring(2), "hex").readUint32LE();
+}
+
+function stripHash(hex: string) {
+    return hex.substring(32);
+}
+
+function parseCommunityIdentifier(api: ApiPromise, params: string) {
+    let cid = api
+        .createType(
+            "EncointerPrimitivesCommunitiesCommunityIdentifier",
+            "0x" + params.substring(0, 18)
+        )
+        .toHuman();
+    let remaining = params.substring(18);
+    return { cid, remaining };
+}
+
+function parseCindex(api: ApiPromise, params: string) {
+    let cindex = LEToNum(
+        api.createType("u32", "0x" + params.substring(0, 8)).toHex()
+    );
+    let remaining = params.substring(8);
+    return { cindex, remaining };
+}
+
+function parseCommunityCeremony(api: ApiPromise, params: string) {
+    let { cid, remaining: rest } = parseCommunityIdentifier(api, params);
+    let { cindex, remaining } = parseCindex(api, rest);
+    return { cid, cindex, remaining };
+}
+
+function parseAccountId(api: ApiPromise, params: string) {
+    let accountId = api
+        .createType("AccountId32", "0x" + params.substring(0, 64))
+        .toHuman();
+    let remaining = params.substring(64);
+    return { accountId, remaining };
 }
 
 const modules: { [key: string]: { [key: string]: Function } } = {
@@ -172,267 +217,337 @@ const modules: { [key: string]: { [key: string]: Function } } = {
     },
 };
 
-function System_Account(params: string) {
+function System_Account(api: ApiPromise, params: string) {
     // TODO
 }
-function System_ExtrinsicCount(params: string) {
+function System_ExtrinsicCount(api: ApiPromise, params: string) {
     // TODO
 }
-function System_BlockWeight(params: string) {
+function System_BlockWeight(api: ApiPromise, params: string) {
     // TODO
 }
-function System_AllExtrinsicsLen(params: string) {
+function System_AllExtrinsicsLen(api: ApiPromise, params: string) {
     // TODO
 }
-function System_BlockHash(params: string) {
+function System_BlockHash(api: ApiPromise, params: string) {
     // TODO
 }
-function System_ExtrinsicData(params: string) {
+function System_ExtrinsicData(api: ApiPromise, params: string) {
     // TODO
 }
-function System_Number(params: string) {
+function System_Number(api: ApiPromise, params: string) {
     // TODO
 }
-function System_ParentHash(params: string) {
+function System_ParentHash(api: ApiPromise, params: string) {
     // TODO
 }
-function System_Digest(params: string) {
+function System_Digest(api: ApiPromise, params: string) {
     // TODO
 }
-function System_Events(params: string) {
+function System_Events(api: ApiPromise, params: string) {
     // TODO
 }
-function System_EventCount(params: string) {
+function System_EventCount(api: ApiPromise, params: string) {
     // TODO
 }
-function System_EventTopics(params: string) {
+function System_EventTopics(api: ApiPromise, params: string) {
     // TODO
 }
-function System_LastRuntimeUpgrade(params: string) {
+function System_LastRuntimeUpgrade(api: ApiPromise, params: string) {
     // TODO
 }
-function System_UpgradedToU32RefCount(params: string) {
+function System_UpgradedToU32RefCount(api: ApiPromise, params: string) {
     // TODO
 }
-function System_UpgradedToTripleRefCount(params: string) {
+function System_UpgradedToTripleRefCount(api: ApiPromise, params: string) {
     // TODO
 }
-function System_ExecutionPhase(params: string) {
+function System_ExecutionPhase(api: ApiPromise, params: string) {
     // TODO
 }
-function RandomnessCollectiveFlip_RandomMaterial(params: string) {
+function RandomnessCollectiveFlip_RandomMaterial(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function Timestamp_Now(params: string) {
+function Timestamp_Now(api: ApiPromise, params: string) {
     // TODO
 }
-function Timestamp_DidUpdate(params: string) {
+function Timestamp_DidUpdate(api: ApiPromise, params: string) {
     // TODO
 }
-function Sudo_Key(params: string) {
+function Sudo_Key(api: ApiPromise, params: string) {
     // TODO
 }
-function Balances_TotalIssuance(params: string) {
+function Balances_TotalIssuance(api: ApiPromise, params: string) {
     // TODO
 }
-function Balances_Account(params: string) {
+function Balances_Account(api: ApiPromise, params: string) {
     // TODO
 }
-function Balances_Locks(params: string) {
+function Balances_Locks(api: ApiPromise, params: string) {
     // TODO
 }
-function Balances_Reserves(params: string) {
+function Balances_Reserves(api: ApiPromise, params: string) {
     // TODO
 }
-function Balances_StorageVersion(params: string) {
+function Balances_StorageVersion(api: ApiPromise, params: string) {
     // TODO
 }
-function TransactionPayment_NextFeeMultiplier(params: string) {
+function TransactionPayment_NextFeeMultiplier(api: ApiPromise, params: string) {
     // TODO
 }
-function TransactionPayment_StorageVersion(params: string) {
+function TransactionPayment_StorageVersion(api: ApiPromise, params: string) {
     // TODO
 }
-function Grandpa_State(params: string) {
+function Grandpa_State(api: ApiPromise, params: string) {
     // TODO
 }
-function Grandpa_PendingChange(params: string) {
+function Grandpa_PendingChange(api: ApiPromise, params: string) {
     // TODO
 }
-function Grandpa_NextForced(params: string) {
+function Grandpa_NextForced(api: ApiPromise, params: string) {
     // TODO
 }
-function Grandpa_Stalled(params: string) {
+function Grandpa_Stalled(api: ApiPromise, params: string) {
     // TODO
 }
-function Grandpa_CurrentSetId(params: string) {
+function Grandpa_CurrentSetId(api: ApiPromise, params: string) {
     // TODO
 }
-function Grandpa_SetIdSession(params: string) {
+function Grandpa_SetIdSession(api: ApiPromise, params: string) {
     // TODO
 }
-function Proxy_Proxies(params: string) {
+function Proxy_Proxies(api: ApiPromise, params: string) {
     // TODO
 }
-function Proxy_Announcements(params: string) {
+function Proxy_Announcements(api: ApiPromise, params: string) {
     // TODO
 }
-function Scheduler_Agenda(params: string) {
+function Scheduler_Agenda(api: ApiPromise, params: string) {
     // TODO
 }
-function Scheduler_Lookup(params: string) {
+function Scheduler_Lookup(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerScheduler_CurrentCeremonyIndex(params: string) {
+function EncointerScheduler_CurrentCeremonyIndex(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerScheduler_LastCeremonyBlock(params: string) {
+function EncointerScheduler_LastCeremonyBlock(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerScheduler_CurrentPhase(params: string) {
+function EncointerScheduler_CurrentPhase(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerScheduler_NextPhaseTimestamp(params: string) {
+function EncointerScheduler_NextPhaseTimestamp(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerScheduler_PhaseDurations(params: string) {
+function EncointerScheduler_PhaseDurations(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: string) {
+function EncointerCeremonies_BurnedBootstrapperNewbieTickets(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_BootstrapperRegistry(params: string) {
+function EncointerCeremonies_BootstrapperRegistry(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_BootstrapperIndex(params: string) {
+function EncointerCeremonies_BootstrapperIndex(
+    api: ApiPromise,
+    params: string
+) {
+    let {
+        cid,
+        cindex,
+        remaining: rest,
+    } = parseCommunityCeremony(api, stripHash(params));
+    let { accountId, remaining } = parseAccountId(api, stripHash(rest));
+    console.log(cid, cindex, accountId, remaining);
     // TODO
 }
-function EncointerCeremonies_BootstrapperCount(params: string) {
+function EncointerCeremonies_BootstrapperCount(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_ReputableRegistry(params: string) {
+function EncointerCeremonies_ReputableRegistry(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_ReputableIndex(params: string) {
+function EncointerCeremonies_ReputableIndex(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_ReputableCount(params: string) {
+function EncointerCeremonies_ReputableCount(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_EndorseeRegistry(params: string) {
+function EncointerCeremonies_EndorseeRegistry(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_EndorseeIndex(params: string) {
+function EncointerCeremonies_EndorseeIndex(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_EndorseeCount(params: string) {
+function EncointerCeremonies_EndorseeCount(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_NewbieRegistry(params: string) {
+function EncointerCeremonies_NewbieRegistry(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_NewbieIndex(params: string) {
+function EncointerCeremonies_NewbieIndex(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_NewbieCount(params: string) {
+function EncointerCeremonies_NewbieCount(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_AssignmentCounts(params: string) {
+function EncointerCeremonies_AssignmentCounts(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_Assignments(params: string) {
+function EncointerCeremonies_Assignments(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_ParticipantReputation(params: string) {
+function EncointerCeremonies_ParticipantReputation(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_Endorsees(params: string) {
+function EncointerCeremonies_Endorsees(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_EndorseesCount(params: string) {
+function EncointerCeremonies_EndorseesCount(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_MeetupCount(params: string) {
+function EncointerCeremonies_MeetupCount(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_AttestationRegistry(params: string) {
+function EncointerCeremonies_AttestationRegistry(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_AttestationIndex(params: string) {
+function EncointerCeremonies_AttestationIndex(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_AttestationCount(params: string) {
+function EncointerCeremonies_AttestationCount(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_MeetupParticipantCountVote(params: string) {
+function EncointerCeremonies_MeetupParticipantCountVote(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_CeremonyReward(params: string) {
+function EncointerCeremonies_CeremonyReward(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_LocationTolerance(params: string) {
+function EncointerCeremonies_LocationTolerance(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_TimeTolerance(params: string) {
+function EncointerCeremonies_TimeTolerance(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_IssuedRewards(params: string) {
+function EncointerCeremonies_IssuedRewards(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCeremonies_InactivityCounters(params: string) {
+function EncointerCeremonies_InactivityCounters(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_InactivityTimeout(params: string) {
+function EncointerCeremonies_InactivityTimeout(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_EndorsementTicketsPerBootstrapper(params: string) {
+function EncointerCeremonies_EndorsementTicketsPerBootstrapper(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_ReputationLifetime(params: string) {
+function EncointerCeremonies_ReputationLifetime(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCeremonies_MeetupTimeOffset(params: string) {
+function EncointerCeremonies_MeetupTimeOffset(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCommunities_CommunityIdentifiersByGeohash(params: string) {
+function EncointerCommunities_CommunityIdentifiersByGeohash(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCommunities_Locations(params: string) {
+function EncointerCommunities_Locations(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCommunities_Bootstrappers(params: string) {
+function EncointerCommunities_Bootstrappers(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCommunities_CommunityIdentifiers(params: string) {
+function EncointerCommunities_CommunityIdentifiers(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCommunities_CommunityMetadata(params: string) {
+function EncointerCommunities_CommunityMetadata(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCommunities_NominalIncome(params: string) {
+function EncointerCommunities_NominalIncome(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerCommunities_MinSolarTripTimeS(params: string) {
+function EncointerCommunities_MinSolarTripTimeS(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerCommunities_MaxSpeedMps(params: string) {
+function EncointerCommunities_MaxSpeedMps(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerBalances_TotalIssuance(params: string) {
+function EncointerBalances_TotalIssuance(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerBalances_Balance(params: string) {
+function EncointerBalances_Balance(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerBalances_DemurragePerBlock(params: string) {
+function EncointerBalances_DemurragePerBlock(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerBalances_FeeConversionFactor(params: string) {
+function EncointerBalances_FeeConversionFactor(
+    api: ApiPromise,
+    params: string
+) {
     // TODO
 }
-function EncointerBazaar_BusinessRegistry(params: string) {
+function EncointerBazaar_BusinessRegistry(api: ApiPromise, params: string) {
     // TODO
 }
-function EncointerBazaar_OfferingRegistry(params: string) {
+function EncointerBazaar_OfferingRegistry(api: ApiPromise, params: string) {
     // TODO
 }

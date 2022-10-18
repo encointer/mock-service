@@ -1,7 +1,7 @@
 fs = require("fs");
 const { xxhashAsHex } = require("@polkadot/util-crypto");
 
-let lookupCode = '{\n'
+let lookupCode = 'const modules: { [key: string]: { [key: string]: Function } } = {\n'
 let functionCode = ''
 fs.readFile("./metadata.json", "utf8", function (err, data) {
     if (err) {
@@ -19,7 +19,7 @@ fs.readFile("./metadata.json", "utf8", function (err, data) {
                 let functionName = `${prefix}_${method}`;
                 let methodHash = xxhashAsHex(method, 128).substring(2);
                 lookupCode += `        "${methodHash}": ${functionName},\n`
-                functionCode += `function ${functionName}(params: string) { \n    // TODO \n}\n`
+                functionCode += `function ${functionName}(api: ApiPromise, params: string) { \n    // TODO \n}\n`
             }
             lookupCode += '    },\n';
         }
