@@ -5,6 +5,7 @@ export function getStorage(api: ApiPromise, key: string) {
     let module = key.substring(0, 32);
     let method = key.substring(32, 64);
     let params = key.substring(64);
+    console.log(params)
     try {
         console.log(modules[module][method].name);
         modules[module][method](api, params);
@@ -375,6 +376,18 @@ function EncointerCeremonies_BootstrapperIndex(
     } = parseCommunityCeremony(api, stripHash(params));
     let { accountId, remaining } = parseAccountId(api, stripHash(rest));
     console.log(cid, cindex, accountId, remaining);
+
+    let sectionLengths = [26, 64]
+    let tuple = []
+    console.log(params)
+    for(let l of sectionLengths) {
+        params = params.substring(32);
+        tuple.push ('0x' + params.substring(0, l));
+        params = params.substring(l)
+    }
+    console.log(tuple)
+    console.log(api.createType('((EncointerPrimitivesCommunitiesCommunityIdentifier, u32), AccountId32)', tuple).toHuman())
+
     // TODO
 }
 function EncointerCeremonies_BootstrapperCount(
