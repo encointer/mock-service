@@ -5,7 +5,7 @@ export function getStorage(api: ApiPromise, key: string) {
     let module = key.substring(0, 32);
     let method = key.substring(32, 64);
     let params = key.substring(64);
-    console.log(params)
+    console.log(params);
     try {
         console.log(modules[module][method].name);
         modules[module][method](api, params);
@@ -19,45 +19,25 @@ export function getStorage(api: ApiPromise, key: string) {
     }
 }
 
-function LEToNum(hex: string) {
-    return Buffer.from(hex.substring(2), "hex").readUint32LE();
-}
+export function decodeParams(
+    api: ApiPromise,
+    paramTypes: string[],
+    params: string
+) {
+    let typeString = `(${paramTypes.join(", ")})`;
+    let tuple = [];
 
-function stripHash(hex: string) {
-    return hex.substring(32);
-}
+    for (let param of paramTypes) {
+        params = params.substring(32);
+        let l = api.createType(param).encodedLength * 2;
+        tuple.push("0x" + params.substring(0, l));
+        params = params.substring(l);
+    }
 
-function parseCommunityIdentifier(api: ApiPromise, params: string) {
-    let cid = api
-        .createType(
-            "EncointerPrimitivesCommunitiesCommunityIdentifier",
-            "0x" + params.substring(0, 18)
-        )
-        .toHuman();
-    let remaining = params.substring(18);
-    return { cid, remaining };
-}
+    if (paramTypes.length === 1)
+        return [api.createType(paramTypes[0], tuple[0]).toHuman()];
 
-function parseCindex(api: ApiPromise, params: string) {
-    let cindex = LEToNum(
-        api.createType("u32", "0x" + params.substring(0, 8)).toHex()
-    );
-    let remaining = params.substring(8);
-    return { cindex, remaining };
-}
-
-function parseCommunityCeremony(api: ApiPromise, params: string) {
-    let { cid, remaining: rest } = parseCommunityIdentifier(api, params);
-    let { cindex, remaining } = parseCindex(api, rest);
-    return { cid, cindex, remaining };
-}
-
-function parseAccountId(api: ApiPromise, params: string) {
-    let accountId = api
-        .createType("AccountId32", "0x" + params.substring(0, 64))
-        .toHuman();
-    let remaining = params.substring(64);
-    return { accountId, remaining };
+    return api.createType(typeString, tuple).toHuman();
 }
 
 const modules: { [key: string]: { [key: string]: Function } } = {
@@ -219,6 +199,8 @@ const modules: { [key: string]: { [key: string]: Function } } = {
 };
 
 function System_Account(api: ApiPromise, params: string) {
+    let paramTypes = ["AccountId32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function System_ExtrinsicCount(api: ApiPromise, params: string) {
@@ -231,9 +213,13 @@ function System_AllExtrinsicsLen(api: ApiPromise, params: string) {
     // TODO
 }
 function System_BlockHash(api: ApiPromise, params: string) {
+    let paramTypes = ["u32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function System_ExtrinsicData(api: ApiPromise, params: string) {
+    let paramTypes = ["u32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function System_Number(api: ApiPromise, params: string) {
@@ -252,6 +238,8 @@ function System_EventCount(api: ApiPromise, params: string) {
     // TODO
 }
 function System_EventTopics(api: ApiPromise, params: string) {
+    let paramTypes = ["H256"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function System_LastRuntimeUpgrade(api: ApiPromise, params: string) {
@@ -285,12 +273,18 @@ function Balances_TotalIssuance(api: ApiPromise, params: string) {
     // TODO
 }
 function Balances_Account(api: ApiPromise, params: string) {
+    let paramTypes = ["AccountId32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Balances_Locks(api: ApiPromise, params: string) {
+    let paramTypes = ["AccountId32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Balances_Reserves(api: ApiPromise, params: string) {
+    let paramTypes = ["AccountId32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Balances_StorageVersion(api: ApiPromise, params: string) {
@@ -318,18 +312,28 @@ function Grandpa_CurrentSetId(api: ApiPromise, params: string) {
     // TODO
 }
 function Grandpa_SetIdSession(api: ApiPromise, params: string) {
+    let paramTypes = ["u64"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Proxy_Proxies(api: ApiPromise, params: string) {
+    let paramTypes = ["AccountId32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Proxy_Announcements(api: ApiPromise, params: string) {
+    let paramTypes = ["AccountId32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Scheduler_Agenda(api: ApiPromise, params: string) {
+    let paramTypes = ["u32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function Scheduler_Lookup(api: ApiPromise, params: string) {
+    let paramTypes = ["Bytes"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerScheduler_CurrentCeremonyIndex(
@@ -351,118 +355,207 @@ function EncointerScheduler_NextPhaseTimestamp(
     // TODO
 }
 function EncointerScheduler_PhaseDurations(api: ApiPromise, params: string) {
+    let paramTypes = ["EncointerPrimitivesSchedulerCeremonyPhaseType"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_BurnedBootstrapperNewbieTickets(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "EncointerPrimitivesCommunitiesCommunityIdentifier",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_BootstrapperRegistry(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "u64",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_BootstrapperIndex(
     api: ApiPromise,
     params: string
 ) {
-    let {
-        cid,
-        cindex,
-        remaining: rest,
-    } = parseCommunityCeremony(api, stripHash(params));
-    let { accountId, remaining } = parseAccountId(api, stripHash(rest));
-    console.log(cid, cindex, accountId, remaining);
-
-    let sectionLengths = [26, 64]
-    let tuple = []
-    console.log(params)
-    for(let l of sectionLengths) {
-        params = params.substring(32);
-        tuple.push ('0x' + params.substring(0, l));
-        params = params.substring(l)
-    }
-    console.log(tuple)
-    console.log(api.createType('((EncointerPrimitivesCommunitiesCommunityIdentifier, u32), AccountId32)', tuple).toHuman())
-
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_BootstrapperCount(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_ReputableRegistry(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "u64",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_ReputableIndex(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_ReputableCount(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_EndorseeRegistry(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "u64",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_EndorseeIndex(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_EndorseeCount(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_NewbieRegistry(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "u64",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_NewbieIndex(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_NewbieCount(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_AssignmentCounts(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_Assignments(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_ParticipantReputation(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_Endorsees(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_EndorseesCount(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_MeetupCount(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_AttestationRegistry(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "u64",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_AttestationIndex(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_AttestationCount(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_MeetupParticipantCountVote(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_CeremonyReward(api: ApiPromise, params: string) {
@@ -478,12 +571,19 @@ function EncointerCeremonies_TimeTolerance(api: ApiPromise, params: string) {
     // TODO
 }
 function EncointerCeremonies_IssuedRewards(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+        "u64",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_InactivityCounters(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCeremonies_InactivityTimeout(
@@ -511,12 +611,21 @@ function EncointerCommunities_CommunityIdentifiersByGeohash(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = ["GeoHash"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCommunities_Locations(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "EncointerPrimitivesCommunitiesCommunityIdentifier",
+        "GeoHash",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCommunities_Bootstrappers(api: ApiPromise, params: string) {
+    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCommunities_CommunityIdentifiers(
@@ -529,9 +638,13 @@ function EncointerCommunities_CommunityMetadata(
     api: ApiPromise,
     params: string
 ) {
+    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCommunities_NominalIncome(api: ApiPromise, params: string) {
+    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerCommunities_MinSolarTripTimeS(
@@ -544,12 +657,21 @@ function EncointerCommunities_MaxSpeedMps(api: ApiPromise, params: string) {
     // TODO
 }
 function EncointerBalances_TotalIssuance(api: ApiPromise, params: string) {
+    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerBalances_Balance(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "EncointerPrimitivesCommunitiesCommunityIdentifier",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerBalances_DemurragePerBlock(api: ApiPromise, params: string) {
+    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerBalances_FeeConversionFactor(
@@ -559,8 +681,15 @@ function EncointerBalances_FeeConversionFactor(
     // TODO
 }
 function EncointerBazaar_BusinessRegistry(api: ApiPromise, params: string) {
+    let paramTypes = [
+        "EncointerPrimitivesCommunitiesCommunityIdentifier",
+        "AccountId32",
+    ];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
 function EncointerBazaar_OfferingRegistry(api: ApiPromise, params: string) {
+    let paramTypes = ["EncointerPrimitivesBazaarBusinessIdentifier", "u32"];
+    console.log(decodeParams(api, paramTypes, params));
     // TODO
 }
