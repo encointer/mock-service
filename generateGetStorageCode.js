@@ -6,7 +6,7 @@ const { getSiName } = require("@polkadot/types/metadata/util");
 const wsProvider = new WsProvider(encointer_rpc_endpoint);
 ApiPromise.create({ provider: wsProvider }).then((api) => {
     let lookupCode =
-        "const modules: { [key: string]: { [key: string]: Function } } = {\n";
+        "const modules: {[key: string]: { [key: string]: { call: Function; paramTypes: string[] } }} = {\n";
     let functionCode = "";
     let pallets = api.runtimeMetadata.asV14.pallets.toHuman();
     for (let pallet of pallets) {
@@ -19,8 +19,12 @@ ApiPromise.create({ provider: wsProvider }).then((api) => {
                 let method = item.name;
                 let functionName = `${prefix}_${method}`;
                 let methodHash = xxhashAsHex(method, 128).substring(2);
-                lookupCode += `        "${methodHash}": ${functionName},\n`;
-                functionCode += getFunctionCode(api, item, functionName);
+                lookupCode += getLookupCode(
+                    methodHash,
+                    functionName,
+                    getParamTypesCode(api, item)
+                );
+                functionCode += getFunctionCode(functionName);
             }
             lookupCode += "    },\n";
         }
@@ -30,27 +34,32 @@ ApiPromise.create({ provider: wsProvider }).then((api) => {
     console.log(functionCode);
 });
 
-function getTypeParamsCode(api, storageItem) {
-    let paramTypeIndex = storageItem.type.Map.key;
-    let typeDef = api.registry.lookup.getSiType(parseInt(paramTypeIndex)).def;
-    let types =
-        storageItem.type.Map.hashers.length === 1
-            ? getSiName(api.registry.lookup, parseInt(paramTypeIndex))
-            : typeDef.asTuple
-                  .map((k) => getSiName(api.registry.lookup, k))
-                  .join('", "');
-    return `["${types}"]`;
+function getLookupCode(methodHash, functionName, typeParamsCode) {
+    return `        "${methodHash}": {
+            call: ${functionName},
+            paramTypes: ${typeParamsCode}
+        },
+`;
 }
 
-function getFunctionCode(api, storageItem, functionName) {
+function getParamTypesCode(api, storageItem) {
     if ("Map" in storageItem.type) {
-        types = getTypeParamsCode(api, storageItem);
-        return `function ${functionName}(api: ApiPromise, params: string) { 
-let paramTypes = ${types};
-console.log(decodeParams(api, paramTypes, params));
-// TODO
-}\n`;
-    } else {
-        return `function ${functionName}(api: ApiPromise, params: string) { \n    // TODO \n}\n`;
+        let paramTypeIndex = storageItem.type.Map.key;
+        let typeDef = api.registry.lookup.getSiType(
+            parseInt(paramTypeIndex)
+        ).def;
+        let types =
+            storageItem.type.Map.hashers.length === 1
+                ? getSiName(api.registry.lookup, parseInt(paramTypeIndex))
+                : typeDef.asTuple
+                      .map((k) => getSiName(api.registry.lookup, k))
+                      .join('", "');
+        return `["${types}"]`;
     }
+
+    return "[]";
+}
+
+function getFunctionCode(functionName) {
+    return `function ${functionName}(params: any[]) { \n    console.log(params) \n}\n`;
 }

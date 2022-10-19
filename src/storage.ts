@@ -7,8 +7,9 @@ export function getStorage(api: ApiPromise, key: string) {
     let params = key.substring(64);
     console.log(params);
     try {
-        console.log(modules[module][method].name);
-        modules[module][method](api, params);
+        let methodObject = modules[module][method];
+        console.log(methodObject.call.name);
+        methodObject.call(decodeParams(api, methodObject.paramTypes, params));
     } catch (e) {
         console.log(e);
         console.log("-----");
@@ -23,7 +24,7 @@ export function decodeParams(
     api: ApiPromise,
     paramTypes: string[],
     params: string
-) {
+): any[] {
     let typeString = `(${paramTypes.join(", ")})`;
     let tuple = [];
 
@@ -37,659 +38,746 @@ export function decodeParams(
     if (paramTypes.length === 1)
         return [api.createType(paramTypes[0], tuple[0]).toHuman()];
 
-    return api.createType(typeString, tuple).toHuman();
+    let result: any[] = JSON.parse(
+        api.createType(typeString, tuple).toString()
+    );
+    return result;
 }
 
-const modules: { [key: string]: { [key: string]: Function } } = {
+const modules: {
+    [key: string]: { [key: string]: { call: Function; paramTypes: string[] } };
+} = {
     // System
     "26aa394eea5630e07c48ae0c9558cef7": {
-        b99d880ec681799c0cf30e8886371da9: System_Account,
-        bdc0bd303e9855813aa8a30d4efc5112: System_ExtrinsicCount,
-        "34abf5cb34d6244378cddbf18e849d96": System_BlockWeight,
-        a86da5a932684f199539836fcb8c886f: System_AllExtrinsicsLen,
-        a44704b568d21667356a5a050c118746: System_BlockHash,
-        df1daeb8986837f21cc5d17596bb78d1: System_ExtrinsicData,
-        "02a5c1b19ab7a04f536c519aca4983ac": System_Number,
-        "8a42f33323cb5ced3b44dd825fda9fcc": System_ParentHash,
-        "99e7f93fc6a98f0874fd057f111c4d2d": System_Digest,
-        "80d41e5e16056765bc8461851072c9d7": System_Events,
-        "0a98fdbe9ce6c55837576c60c7af3850": System_EventCount,
-        bb94e1c21adab714983cf06622e1de76: System_EventTopics,
-        f9cce9c888469bb1a0dceaa129672ef8: System_LastRuntimeUpgrade,
-        "5684a022a34dd8bfa2baaf44f172b710": System_UpgradedToU32RefCount,
-        a7fd6c28836b9a28522dc924110cf439: System_UpgradedToTripleRefCount,
-        ff553b5a9862a516939d82b3d3d8661a: System_ExecutionPhase,
+        b99d880ec681799c0cf30e8886371da9: {
+            call: System_Account,
+            paramTypes: ["AccountId32"],
+        },
+        bdc0bd303e9855813aa8a30d4efc5112: {
+            call: System_ExtrinsicCount,
+            paramTypes: [],
+        },
+        "34abf5cb34d6244378cddbf18e849d96": {
+            call: System_BlockWeight,
+            paramTypes: [],
+        },
+        a86da5a932684f199539836fcb8c886f: {
+            call: System_AllExtrinsicsLen,
+            paramTypes: [],
+        },
+        a44704b568d21667356a5a050c118746: {
+            call: System_BlockHash,
+            paramTypes: ["u32"],
+        },
+        df1daeb8986837f21cc5d17596bb78d1: {
+            call: System_ExtrinsicData,
+            paramTypes: ["u32"],
+        },
+        "02a5c1b19ab7a04f536c519aca4983ac": {
+            call: System_Number,
+            paramTypes: [],
+        },
+        "8a42f33323cb5ced3b44dd825fda9fcc": {
+            call: System_ParentHash,
+            paramTypes: [],
+        },
+        "99e7f93fc6a98f0874fd057f111c4d2d": {
+            call: System_Digest,
+            paramTypes: [],
+        },
+        "80d41e5e16056765bc8461851072c9d7": {
+            call: System_Events,
+            paramTypes: [],
+        },
+        "0a98fdbe9ce6c55837576c60c7af3850": {
+            call: System_EventCount,
+            paramTypes: [],
+        },
+        bb94e1c21adab714983cf06622e1de76: {
+            call: System_EventTopics,
+            paramTypes: ["H256"],
+        },
+        f9cce9c888469bb1a0dceaa129672ef8: {
+            call: System_LastRuntimeUpgrade,
+            paramTypes: [],
+        },
+        "5684a022a34dd8bfa2baaf44f172b710": {
+            call: System_UpgradedToU32RefCount,
+            paramTypes: [],
+        },
+        a7fd6c28836b9a28522dc924110cf439: {
+            call: System_UpgradedToTripleRefCount,
+            paramTypes: [],
+        },
+        ff553b5a9862a516939d82b3d3d8661a: {
+            call: System_ExecutionPhase,
+            paramTypes: [],
+        },
     },
     // RandomnessCollectiveFlip
     bd2a529379475088d3e29a918cd47872: {
-        "1a39ec767bd5269111e6492a1675702a":
-            RandomnessCollectiveFlip_RandomMaterial,
+        "1a39ec767bd5269111e6492a1675702a": {
+            call: RandomnessCollectiveFlip_RandomMaterial,
+            paramTypes: [],
+        },
     },
     // Timestamp
     f0c365c3cf59d671eb72da0e7a4113c4: {
-        "9f1f0515f462cdcf84e0f1d6045dfcbb": Timestamp_Now,
-        bbd108c4899964f707fdaffb82636065: Timestamp_DidUpdate,
+        "9f1f0515f462cdcf84e0f1d6045dfcbb": {
+            call: Timestamp_Now,
+            paramTypes: [],
+        },
+        bbd108c4899964f707fdaffb82636065: {
+            call: Timestamp_DidUpdate,
+            paramTypes: [],
+        },
     },
     // Sudo
     "5c0d1176a568c1f92944340dbfed9e9c": {
-        "530ebca703c85910e7164cb7d1c9e47b": Sudo_Key,
+        "530ebca703c85910e7164cb7d1c9e47b": {
+            call: Sudo_Key,
+            paramTypes: [],
+        },
     },
     // Balances
     c2261276cc9d1f8598ea4b6a74b15c2f: {
-        "57c875e4cff74148e4628f264b974c80": Balances_TotalIssuance,
-        b99d880ec681799c0cf30e8886371da9: Balances_Account,
-        "218f26c73add634897550b4003b26bc6": Balances_Locks,
-        "60c9ab7384f36f3de79a685fa22b4491": Balances_Reserves,
-        "308ce9615de0775a82f8a94dc3d285a1": Balances_StorageVersion,
+        "57c875e4cff74148e4628f264b974c80": {
+            call: Balances_TotalIssuance,
+            paramTypes: [],
+        },
+        b99d880ec681799c0cf30e8886371da9: {
+            call: Balances_Account,
+            paramTypes: ["AccountId32"],
+        },
+        "218f26c73add634897550b4003b26bc6": {
+            call: Balances_Locks,
+            paramTypes: ["AccountId32"],
+        },
+        "60c9ab7384f36f3de79a685fa22b4491": {
+            call: Balances_Reserves,
+            paramTypes: ["AccountId32"],
+        },
+        "308ce9615de0775a82f8a94dc3d285a1": {
+            call: Balances_StorageVersion,
+            paramTypes: [],
+        },
     },
     // TransactionPayment
     "3f1467a096bcd71a5b6a0c8155e20810": {
-        "3f2edf3bdf381debe331ab7446addfdc":
-            TransactionPayment_NextFeeMultiplier,
-        "308ce9615de0775a82f8a94dc3d285a1": TransactionPayment_StorageVersion,
+        "3f2edf3bdf381debe331ab7446addfdc": {
+            call: TransactionPayment_NextFeeMultiplier,
+            paramTypes: [],
+        },
+        "308ce9615de0775a82f8a94dc3d285a1": {
+            call: TransactionPayment_StorageVersion,
+            paramTypes: [],
+        },
     },
     // AssetTxPayment
     "267ada16405529c2f7ef2727d71edbde": {},
     // Grandpa
     "5f9cc45b7a00c5899361e1c6099678dc": {
-        f39a107f2d8d3854c9aba9b021f43d9c: Grandpa_State,
-        "2ff65991b1c915dd6cc8d4825eacfcb4": Grandpa_PendingChange,
-        "01d7818126bd9b3074803e91f4c91b59": Grandpa_NextForced,
-        "7ddd013461b72c3004f9c0ca3faf9ebe": Grandpa_Stalled,
-        "8a2d09463effcc78a22d75b9cb87dffc": Grandpa_CurrentSetId,
-        d47cb8f5328af743ddfb361e7180e7fc: Grandpa_SetIdSession,
+        f39a107f2d8d3854c9aba9b021f43d9c: {
+            call: Grandpa_State,
+            paramTypes: [],
+        },
+        "2ff65991b1c915dd6cc8d4825eacfcb4": {
+            call: Grandpa_PendingChange,
+            paramTypes: [],
+        },
+        "01d7818126bd9b3074803e91f4c91b59": {
+            call: Grandpa_NextForced,
+            paramTypes: [],
+        },
+        "7ddd013461b72c3004f9c0ca3faf9ebe": {
+            call: Grandpa_Stalled,
+            paramTypes: [],
+        },
+        "8a2d09463effcc78a22d75b9cb87dffc": {
+            call: Grandpa_CurrentSetId,
+            paramTypes: [],
+        },
+        d47cb8f5328af743ddfb361e7180e7fc: {
+            call: Grandpa_SetIdSession,
+            paramTypes: ["u64"],
+        },
     },
     // Proxy
     "1809d78346727a0ef58c0fa03bafa323": {
-        "1d885dcfb277f185f2d8e62a5f290c85": Proxy_Proxies,
-        a20a5b2f6b19a88cf22a45d869c2bc1b: Proxy_Announcements,
+        "1d885dcfb277f185f2d8e62a5f290c85": {
+            call: Proxy_Proxies,
+            paramTypes: ["AccountId32"],
+        },
+        a20a5b2f6b19a88cf22a45d869c2bc1b: {
+            call: Proxy_Announcements,
+            paramTypes: ["AccountId32"],
+        },
     },
     // Scheduler
     "3db7a24cfdc9de785974746c14a99df9": {
-        "1643f5419718219c95679ddd2d825574": Scheduler_Agenda,
-        "891ad457bf4da54990fa84a2acb148a2": Scheduler_Lookup,
+        "1643f5419718219c95679ddd2d825574": {
+            call: Scheduler_Agenda,
+            paramTypes: ["u32"],
+        },
+        "891ad457bf4da54990fa84a2acb148a2": {
+            call: Scheduler_Lookup,
+            paramTypes: ["Bytes"],
+        },
     },
     // EncointerScheduler
     "26dc3fa0a77526a8494180a4789f6883": {
-        "4d03567cbac6404a5303f63909f6a2d8":
-            EncointerScheduler_CurrentCeremonyIndex,
-        b531216b22f0f23f5235be314d479d35: EncointerScheduler_LastCeremonyBlock,
-        d9764401941df7f707a47ba7db64a6ea: EncointerScheduler_CurrentPhase,
-        "3cedfb7f662d3fd6652b937dee0cbd06":
-            EncointerScheduler_NextPhaseTimestamp,
-        "2a7f6eb65c9144427bbe5fb524080d70": EncointerScheduler_PhaseDurations,
+        "4d03567cbac6404a5303f63909f6a2d8": {
+            call: EncointerScheduler_CurrentCeremonyIndex,
+            paramTypes: [],
+        },
+        b531216b22f0f23f5235be314d479d35: {
+            call: EncointerScheduler_LastCeremonyBlock,
+            paramTypes: [],
+        },
+        d9764401941df7f707a47ba7db64a6ea: {
+            call: EncointerScheduler_CurrentPhase,
+            paramTypes: [],
+        },
+        "3cedfb7f662d3fd6652b937dee0cbd06": {
+            call: EncointerScheduler_NextPhaseTimestamp,
+            paramTypes: [],
+        },
+        "2a7f6eb65c9144427bbe5fb524080d70": {
+            call: EncointerScheduler_PhaseDurations,
+            paramTypes: ["EncointerPrimitivesSchedulerCeremonyPhaseType"],
+        },
     },
     // EncointerCeremonies
     a7d291a8132b2cc65c41da45f4de7679: {
-        "1b6b4f4f01f5df2248ac9332974a4273":
-            EncointerCeremonies_BurnedBootstrapperNewbieTickets,
-        "79ec0813348ee99c3ac826fed223b847":
-            EncointerCeremonies_BootstrapperRegistry,
-        "7f0adfa903215393e9b5557e5aa6fb64":
-            EncointerCeremonies_BootstrapperIndex,
-        a44c3a625c24f2b24bdef0e2d56da6d0: EncointerCeremonies_BootstrapperCount,
-        "4eafc427de86f208df3b178fe79d47e4":
-            EncointerCeremonies_ReputableRegistry,
-        bc2f6a38e501a7f8b98b8ea2ee4f735b: EncointerCeremonies_ReputableIndex,
-        "6ba96d23b346bf8f4f23cf9b2be90b1c": EncointerCeremonies_ReputableCount,
-        "9ac1b471648c29a2edc5ee7424651b24":
-            EncointerCeremonies_EndorseeRegistry,
-        ecb94723afdfc49e593570aa419d1241: EncointerCeremonies_EndorseeIndex,
-        d64065520cca04a517da597c8458cdf0: EncointerCeremonies_EndorseeCount,
-        "27fcc505f9f2f75363adfed14f8e3f44": EncointerCeremonies_NewbieRegistry,
-        "2ab63020a701ac8bacecd83d91fb1af6": EncointerCeremonies_NewbieIndex,
-        "51dd50a514b4dec8e344f8f7f4f51171": EncointerCeremonies_NewbieCount,
-        "90846fb531cbbf3ffc6ca1c9c0201beb":
-            EncointerCeremonies_AssignmentCounts,
-        "29d2cd3dc23c8f16a6e4ffaa9ad1f9cf": EncointerCeremonies_Assignments,
-        "2a1d07bbb100ca14e56bd0804262911a":
-            EncointerCeremonies_ParticipantReputation,
-        ea19361dcbb6f5212955f453fc346dab: EncointerCeremonies_Endorsees,
-        f4393b85eac8d7c18f60dc098f4b7464: EncointerCeremonies_EndorseesCount,
-        "3d0a4546eaac23dd36cdccac770ea247": EncointerCeremonies_MeetupCount,
-        a9da909ff34c290eb0d55873949258b2:
-            EncointerCeremonies_AttestationRegistry,
-        f095cc95279ea7aa42da1a699074a0fe: EncointerCeremonies_AttestationIndex,
-        d1df70899fe5fc5d1b6f2fe60a4e8241: EncointerCeremonies_AttestationCount,
-        "502c24e19a326404a8142b87f5ad101f":
-            EncointerCeremonies_MeetupParticipantCountVote,
-        "352722e2c08a2f281f21247cbac030f0": EncointerCeremonies_CeremonyReward,
-        "5badfe0f2fbf3bdc834d3f4942c9a198":
-            EncointerCeremonies_LocationTolerance,
-        "1cd1a1157f8ecfa77f4b328693671260": EncointerCeremonies_TimeTolerance,
-        f80f22519a4d3f9ab07d845624b01e1b: EncointerCeremonies_IssuedRewards,
-        "3d367c0032be4bb40cc7ab34aeda32ae":
-            EncointerCeremonies_InactivityCounters,
-        faa6d24e2eac60688f05caa165a83643: EncointerCeremonies_InactivityTimeout,
-        "5c03954ec993845da1c7ff36c91390da":
-            EncointerCeremonies_EndorsementTicketsPerBootstrapper,
-        "5b9f3fcf38b37a818f89b07b85604d63":
-            EncointerCeremonies_ReputationLifetime,
-        "55736ceb9d103a26198891982974f8fe":
-            EncointerCeremonies_MeetupTimeOffset,
+        "1b6b4f4f01f5df2248ac9332974a4273": {
+            call: EncointerCeremonies_BurnedBootstrapperNewbieTickets,
+            paramTypes: [
+                "EncointerPrimitivesCommunitiesCommunityIdentifier",
+                "AccountId32",
+            ],
+        },
+        "79ec0813348ee99c3ac826fed223b847": {
+            call: EncointerCeremonies_BootstrapperRegistry,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "u64",
+            ],
+        },
+        "7f0adfa903215393e9b5557e5aa6fb64": {
+            call: EncointerCeremonies_BootstrapperIndex,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        a44c3a625c24f2b24bdef0e2d56da6d0: {
+            call: EncointerCeremonies_BootstrapperCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "4eafc427de86f208df3b178fe79d47e4": {
+            call: EncointerCeremonies_ReputableRegistry,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "u64",
+            ],
+        },
+        bc2f6a38e501a7f8b98b8ea2ee4f735b: {
+            call: EncointerCeremonies_ReputableIndex,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        "6ba96d23b346bf8f4f23cf9b2be90b1c": {
+            call: EncointerCeremonies_ReputableCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "9ac1b471648c29a2edc5ee7424651b24": {
+            call: EncointerCeremonies_EndorseeRegistry,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "u64",
+            ],
+        },
+        ecb94723afdfc49e593570aa419d1241: {
+            call: EncointerCeremonies_EndorseeIndex,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        d64065520cca04a517da597c8458cdf0: {
+            call: EncointerCeremonies_EndorseeCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "27fcc505f9f2f75363adfed14f8e3f44": {
+            call: EncointerCeremonies_NewbieRegistry,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "u64",
+            ],
+        },
+        "2ab63020a701ac8bacecd83d91fb1af6": {
+            call: EncointerCeremonies_NewbieIndex,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        "51dd50a514b4dec8e344f8f7f4f51171": {
+            call: EncointerCeremonies_NewbieCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "90846fb531cbbf3ffc6ca1c9c0201beb": {
+            call: EncointerCeremonies_AssignmentCounts,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "29d2cd3dc23c8f16a6e4ffaa9ad1f9cf": {
+            call: EncointerCeremonies_Assignments,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "2a1d07bbb100ca14e56bd0804262911a": {
+            call: EncointerCeremonies_ParticipantReputation,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        ea19361dcbb6f5212955f453fc346dab: {
+            call: EncointerCeremonies_Endorsees,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        f4393b85eac8d7c18f60dc098f4b7464: {
+            call: EncointerCeremonies_EndorseesCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "3d0a4546eaac23dd36cdccac770ea247": {
+            call: EncointerCeremonies_MeetupCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        a9da909ff34c290eb0d55873949258b2: {
+            call: EncointerCeremonies_AttestationRegistry,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "u64",
+            ],
+        },
+        f095cc95279ea7aa42da1a699074a0fe: {
+            call: EncointerCeremonies_AttestationIndex,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        d1df70899fe5fc5d1b6f2fe60a4e8241: {
+            call: EncointerCeremonies_AttestationCount,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+            ],
+        },
+        "502c24e19a326404a8142b87f5ad101f": {
+            call: EncointerCeremonies_MeetupParticipantCountVote,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "AccountId32",
+            ],
+        },
+        "352722e2c08a2f281f21247cbac030f0": {
+            call: EncointerCeremonies_CeremonyReward,
+            paramTypes: [],
+        },
+        "5badfe0f2fbf3bdc834d3f4942c9a198": {
+            call: EncointerCeremonies_LocationTolerance,
+            paramTypes: [],
+        },
+        "1cd1a1157f8ecfa77f4b328693671260": {
+            call: EncointerCeremonies_TimeTolerance,
+            paramTypes: [],
+        },
+        f80f22519a4d3f9ab07d845624b01e1b: {
+            call: EncointerCeremonies_IssuedRewards,
+            paramTypes: [
+                "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
+                "u64",
+            ],
+        },
+        "3d367c0032be4bb40cc7ab34aeda32ae": {
+            call: EncointerCeremonies_InactivityCounters,
+            paramTypes: ["EncointerPrimitivesCommunitiesCommunityIdentifier"],
+        },
+        faa6d24e2eac60688f05caa165a83643: {
+            call: EncointerCeremonies_InactivityTimeout,
+            paramTypes: [],
+        },
+        "5c03954ec993845da1c7ff36c91390da": {
+            call: EncointerCeremonies_EndorsementTicketsPerBootstrapper,
+            paramTypes: [],
+        },
+        "5b9f3fcf38b37a818f89b07b85604d63": {
+            call: EncointerCeremonies_ReputationLifetime,
+            paramTypes: [],
+        },
+        "55736ceb9d103a26198891982974f8fe": {
+            call: EncointerCeremonies_MeetupTimeOffset,
+            paramTypes: [],
+        },
     },
     // EncointerCommunities
     "385e522434d0fcd4d6f7ac9825fc853e": {
-        "09ddb29e2135d0bb2fcf29ccdc228db4":
-            EncointerCommunities_CommunityIdentifiersByGeohash,
-        db2bb9522a3355121031ac01f0c7a80e: EncointerCommunities_Locations,
-        c02befc6a61949c466271d825e069487: EncointerCommunities_Bootstrappers,
-        c146a0b15c1cb180ee0017da80ac43cc:
-            EncointerCommunities_CommunityIdentifiers,
-        "2fcbb14bacf659b59d4332845a5d7097":
-            EncointerCommunities_CommunityMetadata,
-        "24a811bb1e5ebd8cb51dca6fc01cfcf4": EncointerCommunities_NominalIncome,
-        b57b711155e19a81a6cc0cb3d34bacc0:
-            EncointerCommunities_MinSolarTripTimeS,
-        "9324b6d2ba2832f145bd82d7272f828a": EncointerCommunities_MaxSpeedMps,
+        "09ddb29e2135d0bb2fcf29ccdc228db4": {
+            call: EncointerCommunities_CommunityIdentifiersByGeohash,
+            paramTypes: ["GeoHash"],
+        },
+        db2bb9522a3355121031ac01f0c7a80e: {
+            call: EncointerCommunities_Locations,
+            paramTypes: [
+                "EncointerPrimitivesCommunitiesCommunityIdentifier",
+                "GeoHash",
+            ],
+        },
+        c02befc6a61949c466271d825e069487: {
+            call: EncointerCommunities_Bootstrappers,
+            paramTypes: ["EncointerPrimitivesCommunitiesCommunityIdentifier"],
+        },
+        c146a0b15c1cb180ee0017da80ac43cc: {
+            call: EncointerCommunities_CommunityIdentifiers,
+            paramTypes: [],
+        },
+        "2fcbb14bacf659b59d4332845a5d7097": {
+            call: EncointerCommunities_CommunityMetadata,
+            paramTypes: ["EncointerPrimitivesCommunitiesCommunityIdentifier"],
+        },
+        "24a811bb1e5ebd8cb51dca6fc01cfcf4": {
+            call: EncointerCommunities_NominalIncome,
+            paramTypes: ["EncointerPrimitivesCommunitiesCommunityIdentifier"],
+        },
+        b57b711155e19a81a6cc0cb3d34bacc0: {
+            call: EncointerCommunities_MinSolarTripTimeS,
+            paramTypes: [],
+        },
+        "9324b6d2ba2832f145bd82d7272f828a": {
+            call: EncointerCommunities_MaxSpeedMps,
+            paramTypes: [],
+        },
     },
     // EncointerBalances
     da1c278283c2287f6c7474ab9b82f51b: {
-        "57c875e4cff74148e4628f264b974c80": EncointerBalances_TotalIssuance,
-        "4ea8ea0c01faa42b6eb344a85c47b387": EncointerBalances_Balance,
-        "6fceb44b6fa28dbef2a4a5fc9eb774ae": EncointerBalances_DemurragePerBlock,
-        "40e616be63276ad8307aa70e63acc0d7":
-            EncointerBalances_FeeConversionFactor,
+        "57c875e4cff74148e4628f264b974c80": {
+            call: EncointerBalances_TotalIssuance,
+            paramTypes: ["EncointerPrimitivesCommunitiesCommunityIdentifier"],
+        },
+        "4ea8ea0c01faa42b6eb344a85c47b387": {
+            call: EncointerBalances_Balance,
+            paramTypes: [
+                "EncointerPrimitivesCommunitiesCommunityIdentifier",
+                "AccountId32",
+            ],
+        },
+        "6fceb44b6fa28dbef2a4a5fc9eb774ae": {
+            call: EncointerBalances_DemurragePerBlock,
+            paramTypes: ["EncointerPrimitivesCommunitiesCommunityIdentifier"],
+        },
+        "40e616be63276ad8307aa70e63acc0d7": {
+            call: EncointerBalances_FeeConversionFactor,
+            paramTypes: [],
+        },
     },
     // EncointerBazaar
     "19891a8d19ea8a5c38a9546956ac70ee": {
-        "89c93dc3a7e6426ec56d6b9f947fd40d": EncointerBazaar_BusinessRegistry,
-        "96bc3ba1b2295380bb15e6e446bc228d": EncointerBazaar_OfferingRegistry,
+        "89c93dc3a7e6426ec56d6b9f947fd40d": {
+            call: EncointerBazaar_BusinessRegistry,
+            paramTypes: [
+                "EncointerPrimitivesCommunitiesCommunityIdentifier",
+                "AccountId32",
+            ],
+        },
+        "96bc3ba1b2295380bb15e6e446bc228d": {
+            call: EncointerBazaar_OfferingRegistry,
+            paramTypes: ["EncointerPrimitivesBazaarBusinessIdentifier", "u32"],
+        },
     },
 };
 
-function System_Account(api: ApiPromise, params: string) {
-    let paramTypes = ["AccountId32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
+function System_Account(params: any[]) {
+    console.log(params);
 }
-function System_ExtrinsicCount(api: ApiPromise, params: string) {
-    // TODO
+function System_ExtrinsicCount(params: any[]) {
+    console.log(params);
 }
-function System_BlockWeight(api: ApiPromise, params: string) {
-    // TODO
+function System_BlockWeight(params: any[]) {
+    console.log(params);
 }
-function System_AllExtrinsicsLen(api: ApiPromise, params: string) {
-    // TODO
+function System_AllExtrinsicsLen(params: any[]) {
+    console.log(params);
 }
-function System_BlockHash(api: ApiPromise, params: string) {
-    let paramTypes = ["u32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
+function System_BlockHash(params: any[]) {
+    console.log(params);
 }
-function System_ExtrinsicData(api: ApiPromise, params: string) {
-    let paramTypes = ["u32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
+function System_ExtrinsicData(params: any[]) {
+    console.log(params);
 }
-function System_Number(api: ApiPromise, params: string) {
-    // TODO
+function System_Number(params: any[]) {
+    console.log(params);
 }
-function System_ParentHash(api: ApiPromise, params: string) {
-    // TODO
+function System_ParentHash(params: any[]) {
+    console.log(params);
 }
-function System_Digest(api: ApiPromise, params: string) {
-    // TODO
+function System_Digest(params: any[]) {
+    console.log(params);
 }
-function System_Events(api: ApiPromise, params: string) {
-    // TODO
+function System_Events(params: any[]) {
+    console.log(params);
 }
-function System_EventCount(api: ApiPromise, params: string) {
-    // TODO
+function System_EventCount(params: any[]) {
+    console.log(params);
 }
-function System_EventTopics(api: ApiPromise, params: string) {
-    let paramTypes = ["H256"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
+function System_EventTopics(params: any[]) {
+    console.log(params);
 }
-function System_LastRuntimeUpgrade(api: ApiPromise, params: string) {
-    // TODO
+function System_LastRuntimeUpgrade(params: any[]) {
+    console.log(params);
 }
-function System_UpgradedToU32RefCount(api: ApiPromise, params: string) {
-    // TODO
+function System_UpgradedToU32RefCount(params: any[]) {
+    console.log(params);
 }
-function System_UpgradedToTripleRefCount(api: ApiPromise, params: string) {
-    // TODO
+function System_UpgradedToTripleRefCount(params: any[]) {
+    console.log(params);
 }
-function System_ExecutionPhase(api: ApiPromise, params: string) {
-    // TODO
+function System_ExecutionPhase(params: any[]) {
+    console.log(params);
 }
-function RandomnessCollectiveFlip_RandomMaterial(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
+function RandomnessCollectiveFlip_RandomMaterial(params: any[]) {
+    console.log(params);
 }
-function Timestamp_Now(api: ApiPromise, params: string) {
-    // TODO
+function Timestamp_Now(params: any[]) {
+    console.log(params);
 }
-function Timestamp_DidUpdate(api: ApiPromise, params: string) {
-    // TODO
+function Timestamp_DidUpdate(params: any[]) {
+    console.log(params);
 }
-function Sudo_Key(api: ApiPromise, params: string) {
-    // TODO
-}
-function Balances_TotalIssuance(api: ApiPromise, params: string) {
-    // TODO
-}
-function Balances_Account(api: ApiPromise, params: string) {
-    let paramTypes = ["AccountId32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Balances_Locks(api: ApiPromise, params: string) {
-    let paramTypes = ["AccountId32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Balances_Reserves(api: ApiPromise, params: string) {
-    let paramTypes = ["AccountId32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Balances_StorageVersion(api: ApiPromise, params: string) {
-    // TODO
-}
-function TransactionPayment_NextFeeMultiplier(api: ApiPromise, params: string) {
-    // TODO
-}
-function TransactionPayment_StorageVersion(api: ApiPromise, params: string) {
-    // TODO
-}
-function Grandpa_State(api: ApiPromise, params: string) {
-    // TODO
-}
-function Grandpa_PendingChange(api: ApiPromise, params: string) {
-    // TODO
-}
-function Grandpa_NextForced(api: ApiPromise, params: string) {
-    // TODO
-}
-function Grandpa_Stalled(api: ApiPromise, params: string) {
-    // TODO
-}
-function Grandpa_CurrentSetId(api: ApiPromise, params: string) {
-    // TODO
-}
-function Grandpa_SetIdSession(api: ApiPromise, params: string) {
-    let paramTypes = ["u64"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Proxy_Proxies(api: ApiPromise, params: string) {
-    let paramTypes = ["AccountId32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Proxy_Announcements(api: ApiPromise, params: string) {
-    let paramTypes = ["AccountId32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Scheduler_Agenda(api: ApiPromise, params: string) {
-    let paramTypes = ["u32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function Scheduler_Lookup(api: ApiPromise, params: string) {
-    let paramTypes = ["Bytes"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerScheduler_CurrentCeremonyIndex(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerScheduler_LastCeremonyBlock(api: ApiPromise, params: string) {
-    // TODO
-}
-function EncointerScheduler_CurrentPhase(api: ApiPromise, params: string) {
-    // TODO
-}
-function EncointerScheduler_NextPhaseTimestamp(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerScheduler_PhaseDurations(api: ApiPromise, params: string) {
-    let paramTypes = ["EncointerPrimitivesSchedulerCeremonyPhaseType"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_BurnedBootstrapperNewbieTickets(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "EncointerPrimitivesCommunitiesCommunityIdentifier",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_BootstrapperRegistry(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "u64",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_BootstrapperIndex(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_BootstrapperCount(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_ReputableRegistry(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "u64",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_ReputableIndex(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_ReputableCount(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_EndorseeRegistry(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "u64",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_EndorseeIndex(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_EndorseeCount(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_NewbieRegistry(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "u64",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_NewbieIndex(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_NewbieCount(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_AssignmentCounts(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_Assignments(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_ParticipantReputation(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_Endorsees(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_EndorseesCount(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_MeetupCount(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_AttestationRegistry(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "u64",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_AttestationIndex(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_AttestationCount(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_MeetupParticipantCountVote(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_CeremonyReward(api: ApiPromise, params: string) {
-    // TODO
-}
-function EncointerCeremonies_LocationTolerance(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerCeremonies_TimeTolerance(api: ApiPromise, params: string) {
-    // TODO
-}
-function EncointerCeremonies_IssuedRewards(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "(EncointerPrimitivesCommunitiesCommunityIdentifier,u32)",
-        "u64",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_InactivityCounters(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCeremonies_InactivityTimeout(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerCeremonies_EndorsementTicketsPerBootstrapper(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerCeremonies_ReputationLifetime(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerCeremonies_MeetupTimeOffset(api: ApiPromise, params: string) {
-    // TODO
-}
-function EncointerCommunities_CommunityIdentifiersByGeohash(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = ["GeoHash"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCommunities_Locations(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "EncointerPrimitivesCommunitiesCommunityIdentifier",
-        "GeoHash",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCommunities_Bootstrappers(api: ApiPromise, params: string) {
-    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCommunities_CommunityIdentifiers(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerCommunities_CommunityMetadata(
-    api: ApiPromise,
-    params: string
-) {
-    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCommunities_NominalIncome(api: ApiPromise, params: string) {
-    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerCommunities_MinSolarTripTimeS(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerCommunities_MaxSpeedMps(api: ApiPromise, params: string) {
-    // TODO
-}
-function EncointerBalances_TotalIssuance(api: ApiPromise, params: string) {
-    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerBalances_Balance(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "EncointerPrimitivesCommunitiesCommunityIdentifier",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerBalances_DemurragePerBlock(api: ApiPromise, params: string) {
-    let paramTypes = ["EncointerPrimitivesCommunitiesCommunityIdentifier"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerBalances_FeeConversionFactor(
-    api: ApiPromise,
-    params: string
-) {
-    // TODO
-}
-function EncointerBazaar_BusinessRegistry(api: ApiPromise, params: string) {
-    let paramTypes = [
-        "EncointerPrimitivesCommunitiesCommunityIdentifier",
-        "AccountId32",
-    ];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
-}
-function EncointerBazaar_OfferingRegistry(api: ApiPromise, params: string) {
-    let paramTypes = ["EncointerPrimitivesBazaarBusinessIdentifier", "u32"];
-    console.log(decodeParams(api, paramTypes, params));
-    // TODO
+function Sudo_Key(params: any[]) {
+    console.log(params);
+}
+function Balances_TotalIssuance(params: any[]) {
+    console.log(params);
+}
+function Balances_Account(params: any[]) {
+    console.log(params);
+}
+function Balances_Locks(params: any[]) {
+    console.log(params);
+}
+function Balances_Reserves(params: any[]) {
+    console.log(params);
+}
+function Balances_StorageVersion(params: any[]) {
+    console.log(params);
+}
+function TransactionPayment_NextFeeMultiplier(params: any[]) {
+    console.log(params);
+}
+function TransactionPayment_StorageVersion(params: any[]) {
+    console.log(params);
+}
+function Grandpa_State(params: any[]) {
+    console.log(params);
+}
+function Grandpa_PendingChange(params: any[]) {
+    console.log(params);
+}
+function Grandpa_NextForced(params: any[]) {
+    console.log(params);
+}
+function Grandpa_Stalled(params: any[]) {
+    console.log(params);
+}
+function Grandpa_CurrentSetId(params: any[]) {
+    console.log(params);
+}
+function Grandpa_SetIdSession(params: any[]) {
+    console.log(params);
+}
+function Proxy_Proxies(params: any[]) {
+    console.log(params);
+}
+function Proxy_Announcements(params: any[]) {
+    console.log(params);
+}
+function Scheduler_Agenda(params: any[]) {
+    console.log(params);
+}
+function Scheduler_Lookup(params: any[]) {
+    console.log(params);
+}
+function EncointerScheduler_CurrentCeremonyIndex(params: any[]) {
+    console.log(params);
+}
+function EncointerScheduler_LastCeremonyBlock(params: any[]) {
+    console.log(params);
+}
+function EncointerScheduler_CurrentPhase(params: any[]) {
+    console.log(params);
+}
+function EncointerScheduler_NextPhaseTimestamp(params: any[]) {
+    console.log(params);
+}
+function EncointerScheduler_PhaseDurations(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_BootstrapperRegistry(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_BootstrapperIndex(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_BootstrapperCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_ReputableRegistry(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_ReputableIndex(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_ReputableCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_EndorseeRegistry(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_EndorseeIndex(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_EndorseeCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_NewbieRegistry(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_NewbieIndex(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_NewbieCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_AssignmentCounts(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_Assignments(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_ParticipantReputation(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_Endorsees(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_EndorseesCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_MeetupCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_AttestationRegistry(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_AttestationIndex(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_AttestationCount(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_MeetupParticipantCountVote(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_CeremonyReward(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_LocationTolerance(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_TimeTolerance(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_IssuedRewards(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_InactivityCounters(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_InactivityTimeout(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_EndorsementTicketsPerBootstrapper(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_ReputationLifetime(params: any[]) {
+    console.log(params);
+}
+function EncointerCeremonies_MeetupTimeOffset(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_CommunityIdentifiersByGeohash(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_Locations(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_Bootstrappers(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_CommunityIdentifiers(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_CommunityMetadata(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_NominalIncome(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_MinSolarTripTimeS(params: any[]) {
+    console.log(params);
+}
+function EncointerCommunities_MaxSpeedMps(params: any[]) {
+    console.log(params);
+}
+function EncointerBalances_TotalIssuance(params: any[]) {
+    console.log(params);
+}
+function EncointerBalances_Balance(params: any[]) {
+    console.log(params);
+}
+function EncointerBalances_DemurragePerBlock(params: any[]) {
+    console.log(params);
+}
+function EncointerBalances_FeeConversionFactor(params: any[]) {
+    console.log(params);
+}
+function EncointerBazaar_BusinessRegistry(params: any[]) {
+    console.log(params);
+}
+function EncointerBazaar_OfferingRegistry(params: any[]) {
+    console.log(params);
 }
