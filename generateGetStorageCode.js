@@ -2,11 +2,12 @@ const { xxhashAsHex } = require("@polkadot/util-crypto");
 const { ApiPromise, WsProvider } = require("@polkadot/api");
 const encointer_rpc_endpoint = "ws://127.0.0.1:9945";
 const { getSiName } = require("@polkadot/types/metadata/util");
+const { resolve } = require("path");
 
 const wsProvider = new WsProvider(encointer_rpc_endpoint);
 ApiPromise.create({ provider: wsProvider }).then((api) => {
     let lookupCode =
-        "const modules: {[key: string]: { [key: string]: { call: Function; paramTypes: string[] } }} = {\n";
+        "const modules: {[key: string]: { [key: string]: { call: Function; paramTypes: string[], returnType: string } }} = {\n";
     let functionCode = "";
     let pallets = api.runtimeMetadata.asV14.pallets.toHuman();
     for (let pallet of pallets) {
@@ -19,10 +20,13 @@ ApiPromise.create({ provider: wsProvider }).then((api) => {
                 let method = item.name;
                 let functionName = `${prefix}_${method}`;
                 let methodHash = xxhashAsHex(method, 128).substring(2);
+                let { returnTypeCode, paramsTypesCode } =
+                    getParamAndReturnTypesCode(api, item);
                 lookupCode += getLookupCode(
                     methodHash,
                     functionName,
-                    getParamTypesCode(api, item)
+                    paramsTypesCode,
+                    returnTypeCode
                 );
                 functionCode += getFunctionCode(functionName);
             }
@@ -34,32 +38,66 @@ ApiPromise.create({ provider: wsProvider }).then((api) => {
     console.log(functionCode);
 });
 
-function getLookupCode(methodHash, functionName, typeParamsCode) {
+function getLookupCode(
+    methodHash,
+    functionName,
+    typeParamsCode,
+    returnTypeCode
+) {
     return `        "${methodHash}": {
             call: ${functionName},
-            paramTypes: ${typeParamsCode}
+            paramTypes: ${typeParamsCode},
+            returnType: ${returnTypeCode}
         },
 `;
 }
 
-function getParamTypesCode(api, storageItem) {
+function resolveType(api, typeIndex) {
+    let typeDef = api.registry.lookup.getSiType(parseInt(typeIndex)).def;
+    let types = [];
+    if (typeDef.isTuple) {
+        typeDef.asTuple.forEach((k) =>
+            types.push(getSiName(api.registry.lookup, k))
+        );
+    } else {
+        let type = getSiName(api.registry.lookup, parseInt(typeIndex));
+        types = [type];
+    }
+    return types;
+}
+
+function formatTypeArray(type) {
+    return `["${type.join('", "')}"]`;
+}
+function formatTypeTupleString(type) {
+    return `"${type.join(",")}"`;
+}
+function formatTypeSingleString(type) {
+    if (type.length > 0) return `"${type[0]}"`;
+    return '""';
+}
+
+function formatTypeString(type) {
+    return type.length > 1
+        ? formatTypeTupleString(type)
+        : formatTypeSingleString(type);
+}
+
+function getParamAndReturnTypesCode(api, storageItem) {
+    let paramsTypesCode = "[]";
+    let returnType = "";
     if ("Map" in storageItem.type) {
         let paramTypeIndex = storageItem.type.Map.key;
-        let typeDef = api.registry.lookup.getSiType(
-            parseInt(paramTypeIndex)
-        ).def;
-        let types =
-            storageItem.type.Map.hashers.length === 1
-                ? getSiName(api.registry.lookup, parseInt(paramTypeIndex))
-                : typeDef.asTuple
-                      .map((k) => getSiName(api.registry.lookup, k))
-                      .join('", "');
-        return `["${types}"]`;
+        let types = resolveType(api, paramTypeIndex);
+        paramsTypesCode = formatTypeArray(types);
+        returnType = resolveType(api, storageItem.type.Map.value);
+    } else {
+        returnType = resolveType(api, storageItem.type.Plain);
     }
-
-    return "[]";
+    let returnTypeCode = formatTypeString(returnType);
+    return { returnTypeCode, paramsTypesCode };
 }
 
 function getFunctionCode(functionName) {
-    return `function ${functionName}(params: any[]) { \n    console.log(params) \n}\n`;
+    return `function ${functionName}(params: any[]) { \n    console.log(params); \n}\n`;
 }
