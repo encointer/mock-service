@@ -26,6 +26,20 @@ export async function handleMessage(
             break;
         case "encointer_getLocations":
             break;
+        case "encointer_getAllBalances":
+            break;
+        case "encointer_getReputations":
+            break;
+        case "encointer_getAggregatedAccountData":
+            break;
+        case "encointer_getAllCommunities":
+            break;
+        case "author_submitAndWatchExtrinsic":
+            break;
+        case "author_unwatchExtrinsic":
+            break;
+        case "state_subscribeStorage":
+            break;
         case "state_getStorage":
             getStorage(api, request.params[0]);
             break;
