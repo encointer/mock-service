@@ -1,3 +1,4 @@
+import { reputationLifetime } from "../consts";
 import { getCommunityObject, putCommunityObject } from "../db";
 import {
     CommuniyAlreadyExists,
@@ -10,12 +11,17 @@ import {
 import {
     Phase,
     Address,
-    ParticipantRole,
+    ParticipantType,
     AttestationArray,
     CommunityObject,
     CommunityIdentifier,
+    AllCommunities,
+    ReputationRpcItem,
+    BalanceRpcItem,
+    AggregatedAccountData,
 } from "../types";
 import { getParticipantsEligibleForReward } from "./meetupValidation";
+import { parseCid } from "./util";
 
 export function advancePhase(communityObject: CommunityObject) {
     let phase = communityObject.currentPhase;
@@ -44,13 +50,18 @@ function initCeremony(communityObject: CommunityObject) {
 export function registerParticipant(
     communityObject: CommunityObject,
     participant: Address,
-    role: ParticipantRole
+    type: ParticipantType
 ) {
     if (communityObject.currentPhase === "assigning")
         throw new WrongPhaseForRegistering();
     let ceremonies = communityObject.ceremonies;
-    ceremonies[ceremonies.length - 1].participants[participant] = role;
-    ceremonies[ceremonies.length - 1].reputations[participant] = ["Bootstrapper", "Reputable"].includes(role) ? "UnverifiedReputable" : "Unverified";
+    ceremonies[ceremonies.length - 1].participants[participant] = type;
+    ceremonies[ceremonies.length - 1].reputations[participant] = [
+        "Bootstrapper",
+        "Reputable",
+    ].includes(type)
+        ? "UnverifiedReputable"
+        : "Unverified";
     communityObject.ceremonies = ceremonies;
     return communityObject;
 }
@@ -83,7 +94,9 @@ export function claimRewards(communityObject: CommunityObject) {
         ceremony.votes,
         ceremony.attestations
     );
-    participantsEligibleForReward.forEach(p => ceremony.reputations[p] = 'VerifiedUnlinked')
+    participantsEligibleForReward.forEach(
+        (p) => (ceremony.reputations[p] = "VerifiedUnlinked")
+    );
     ceremonies[ceremonyIndex] = ceremony;
     for (let p of participantsEligibleForReward) {
         if (p in communityObject.participants)
@@ -146,4 +159,66 @@ export async function newCommunity(cid: CommunityIdentifier) {
     };
 
     await putCommunityObject(cid, communityObject);
+}
+
+export function getReputations(
+    participant: Address,
+    allCommunities: AllCommunities
+) {
+    let reputations: ReputationRpcItem[] = [];
+    for (const [cid, community] of Object.entries(allCommunities)) {
+        let maxCeremonyIndex = community.ceremonies.length - 1;
+        for (let i = 0; i < reputationLifetime; i++) {
+            let cindex = maxCeremonyIndex - i;
+            let ceremony = community.ceremonies[i];
+            let reputation = ceremony.reputations[participant];
+            if (reputation) {
+                reputations.push([
+                    cindex,
+                    { communityIdentifier: parseCid(cid), reputation },
+                ]);
+            }
+        }
+    }
+    return reputations;
+}
+
+export function getAllBalances(
+    participant: Address,
+    allCommunities: AllCommunities
+) {
+    let balances: BalanceRpcItem[] = [];
+    for (const [cid, community] of Object.entries(allCommunities)) {
+        let balance = community.participants[participant];
+        if (balance) {
+            balances.push([
+                parseCid(cid),
+                { principal: balance, lastUpdate: 1337 },
+            ]);
+        }
+    }
+    return balances;
+}
+
+export function getAggregatedAccountData(
+    communityObject: CommunityObject,
+    participant: Address
+): AggregatedAccountData {
+    let global = {
+        ceremonyPhase: communityObject.currentPhase,
+        ceremonyIndex: communityObject.ceremonies.length - 1,
+    };
+    let personal = null;
+
+    let ceremony = communityObject.ceremonies[-1];
+    if (participant in ceremony.participants) {
+        personal = {
+            participantType: ceremony.participants[participant],
+            meetupIndex: 1,
+            meetupLocationIndex: 1,
+            meetupTime: null,
+            meetupRegistry: Object.keys(ceremony.participants),
+        };
+    }
+    return { global, personal };
 }

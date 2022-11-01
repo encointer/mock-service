@@ -1,6 +1,6 @@
 import { Level } from "level";
-import { CommunityObject, CommunityIdentifier } from "./types";
-import {CommunityDoesNotExist} from "./errors"
+import { CommunityObject, CommunityIdentifier, AllCommunities } from "./types";
+import { CommunityDoesNotExist } from "./errors";
 
 const db = new Level<CommunityIdentifier, CommunityObject>("db", {
     valueEncoding: "json",
@@ -19,4 +19,12 @@ export async function putCommunityObject(
     communityObject: CommunityObject
 ) {
     await db.put(cid, communityObject);
+}
+
+export async function getAllCommunities() {
+    let allCommunities: AllCommunities = {};
+    for await (const [key, value] of db.iterator()) {
+        allCommunities[key] = value;
+    }
+    return allCommunities;
 }

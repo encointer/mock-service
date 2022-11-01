@@ -1,5 +1,7 @@
+import { WrongPhaseForClaimingRewards } from "./errors";
+
 export type Address = string;
-export type ParticipantRole =
+export type ParticipantType =
     | "Bootstrapper"
     | "Reputable"
     | "Newbie"
@@ -11,9 +13,11 @@ export type Reputation =
     | "VerifiedLinked";
 export type Phase = "registering" | "assigning" | "attesting";
 export type CommunityIdentifier = string;
+export type CommunityIdentifierObject = { geohash: string; digest: string };
 export type AttestationArray = Array<Address>;
 export type Attestations = { [key: Address]: AttestationArray };
 export type Votes = { [key: Address]: number };
+export type AllCommunities = { [key: string]: CommunityObject };
 
 export type CommunityObject = {
     currentPhase: Phase;
@@ -23,10 +27,34 @@ export type CommunityObject = {
     };
     ceremonies: Array<{
         participants: {
-            [key: Address]: ParticipantRole;
+            [key: Address]: ParticipantType;
         };
         votes: Votes;
         attestations: Attestations;
-        reputations: {[key: Address]: Reputation;}
+        reputations: { [key: Address]: Reputation };
     }>;
+};
+
+export type ReputationRpcItem = [
+    number,
+    { communityIdentifier: CommunityIdentifierObject; reputation: Reputation }
+];
+
+export type BalanceRpcItem = [
+    CommunityIdentifierObject,
+    { principal: number; lastUpdate: number }
+];
+
+export type AggregatedAccountData = {
+    global: {
+        ceremonyPhase: Phase;
+        ceremonyIndex: number;
+    };
+    personal: null | {
+        participantType: ParticipantType;
+        meetupIndex: number;
+        meetupLocationIndex: number;
+        meetupTime: null | number;
+        meetupRegistry: Address[];
+    };
 };
