@@ -35,7 +35,7 @@ function initCeremony(communityObject: CommunityObject) {
         participants: {},
         attestations: {},
         votes: {},
-        participantsEligibleForReward: [],
+        reputations: {},
     });
     communityObject.ceremonies = ceremonies;
     return communityObject;
@@ -50,6 +50,7 @@ export function registerParticipant(
         throw new WrongPhaseForRegistering();
     let ceremonies = communityObject.ceremonies;
     ceremonies[ceremonies.length - 1].participants[participant] = role;
+    ceremonies[ceremonies.length - 1].reputations[participant] = ["Bootstrapper", "Reputable"].includes(role) ? "UnverifiedReputable" : "Unverified";
     communityObject.ceremonies = ceremonies;
     return communityObject;
 }
@@ -82,7 +83,7 @@ export function claimRewards(communityObject: CommunityObject) {
         ceremony.votes,
         ceremony.attestations
     );
-    ceremony.participantsEligibleForReward = participantsEligibleForReward;
+    participantsEligibleForReward.forEach(p => ceremony.reputations[p] = 'VerifiedUnlinked')
     ceremonies[ceremonyIndex] = ceremony;
     for (let p of participantsEligibleForReward) {
         if (p in communityObject.participants)
@@ -139,7 +140,7 @@ export async function newCommunity(cid: CommunityIdentifier) {
                 participants: {},
                 attestations: {},
                 votes: {},
-                participantsEligibleForReward: [],
+                reputations: {},
             },
         ],
     };

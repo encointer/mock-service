@@ -1,9 +1,14 @@
 export type Address = string;
 export type ParticipantRole =
-    | "bootstrapper"
-    | "reputable"
-    | "newbie"
-    | "endorsee";
+    | "Bootstrapper"
+    | "Reputable"
+    | "Newbie"
+    | "Endorsee";
+export type Reputation =
+    | "Unverified"
+    | "UnverifiedReputable"
+    | "VerifiedUnlinked"
+    | "VerifiedLinked";
 export type Phase = "registering" | "assigning" | "attesting";
 export type CommunityIdentifier = string;
 export type AttestationArray = Array<Address>;
@@ -22,6 +27,6 @@ export type CommunityObject = {
         };
         votes: Votes;
         attestations: Attestations;
-        participantsEligibleForReward: Array<Address>;
+        reputations: {[key: Address]: Reputation;}
     }>;
 };
