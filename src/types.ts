@@ -20,6 +20,7 @@ export type Votes = { [key: Address]: number };
 export type AllCommunities = { [key: string]: CommunityObject };
 
 export type CommunityObject = {
+    name: string;
     currentPhase: Phase;
     income: number;
     participants: {
@@ -44,6 +45,11 @@ export type BalanceRpcItem = [
     CommunityIdentifierObject,
     { principal: number; lastUpdate: number }
 ];
+
+export type AllCommunitiesRpcItem = {
+    cid: CommunityIdentifierObject;
+    name: string;
+};
 
 export type AggregatedAccountData = {
     global: {

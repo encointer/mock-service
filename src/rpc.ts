@@ -1,10 +1,9 @@
-import { advancePhase } from "./lib/runtime";
-import { getCommunityObject, putCommunityObject } from "./db";
+import { advancePhase, getAllCommunites } from "./lib/runtime";
+import { getCommunityObject, putCommunityObject, getAllCommunitiyObjects } from "./db";
 import { ApiPromise } from "@polkadot/api";
 import { encointer_rpc_endpoint } from "./consts";
 import { getStorage } from "./storage";
 import { WebSocket, RawData } from "ws";
-import { SubmittableExtrinsics } from "@polkadot/api/types";
 
 function relay(ws: WebSocket, data: RawData) {
     const encointer_rpc = new WebSocket(encointer_rpc_endpoint);
@@ -104,6 +103,9 @@ export async function handleMessage(
             // },
             break;
         case "encointer_getAllCommunities":
+            let allCommunities = await getAllCommunitiyObjects();
+            let result = getAllCommunites(allCommunities);
+            ws.send(JSON.stringify(result));
             //{"jsonrpc":"2.0","result":[{"cid":{"geohash":"0x7530716a39","digest":"0x77f79df7"},"name":"Leu Zurich"},{"cid":{"geohash":"0x6b78746b76","digest":"0x45387a38"},"name":"Aslah"}],"id":30}
             break;
         case "author_submitAndWatchExtrinsic":

@@ -21,7 +21,7 @@ export async function putCommunityObject(
     await db.put(cid, communityObject);
 }
 
-export async function getAllCommunities() {
+export async function getAllCommunitiyObjects() {
     let allCommunities: AllCommunities = {};
     for await (const [key, value] of db.iterator()) {
         allCommunities[key] = value;

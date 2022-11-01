@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { encointer_rpc_endpoint } from "./consts";
 import { handleMessage } from "./rpc";
-import { putCommunityObject, getAllCommunities } from "./db";
+import { putCommunityObject } from "./db";
 import { CommunityObject } from "./types";
 import { decodeParams, getStorage } from "./storage";
 import { WebSocketServer, WebSocket, RawData } from "ws";
@@ -36,6 +36,7 @@ async function main() {
     });
 
     const communityObject: CommunityObject = {
+        name: 'Test',
         currentPhase: "attesting",
         income: 100,
         participants: {},

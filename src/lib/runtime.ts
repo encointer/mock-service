@@ -19,6 +19,7 @@ import {
     ReputationRpcItem,
     BalanceRpcItem,
     AggregatedAccountData,
+    AllCommunitiesRpcItem,
 } from "../types";
 import { getParticipantsEligibleForReward } from "./meetupValidation";
 import { parseCid } from "./util";
@@ -142,9 +143,10 @@ export function getBalance(
     return communityObject.participants[participant];
 }
 
-export async function newCommunity(cid: CommunityIdentifier) {
+export async function newCommunity(cid: CommunityIdentifier, name: string) {
     if (await getCommunityObject(cid)) throw new CommuniyAlreadyExists();
     const communityObject: CommunityObject = {
+        name,
         currentPhase: "registering",
         income: 10,
         participants: {},
@@ -221,4 +223,12 @@ export function getAggregatedAccountData(
         };
     }
     return { global, personal };
+}
+
+export function getAllCommunites(allCommunities: AllCommunities) {
+    let communites: AllCommunitiesRpcItem[] = [];
+    for (const [cid, community] of Object.entries(allCommunities)) {
+        communites.push({ cid: parseCid(cid), name: community.name });
+    }
+    return communites;
 }
