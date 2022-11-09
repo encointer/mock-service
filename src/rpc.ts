@@ -18,19 +18,11 @@ import Geohash from "latlon-geohash";
 import { CommunityIdentifierObject } from "./types";
 import { cidToString } from "./lib/util";
 
-function relay(ws: WebSocket, data: RawData) {
-    const encointer_rpc = new WebSocket(encointer_rpc_endpoint);
+function relay(ws: WebSocket, data: RawData, encointer_rpc: WebSocket) {
     let request = JSON.parse(data.toString());
-    console.log(`${request.method} request:`);
-    console.log(request);
-    encointer_rpc.on("open", function open() {
-        encointer_rpc.send(data);
-    });
-    encointer_rpc.on("message", function message(data) {
-        console.log(`${request.method} response:`);
-        console.log(data.toString());
-        ws.send(data.toString());
-    });
+    // console.log(`${request.method} request:`);
+    // console.log(request);
+    encointer_rpc.send(data);
 }
 
 function getLocations(cid: CommunityIdentifierObject) {
@@ -43,10 +35,11 @@ function getLocations(cid: CommunityIdentifierObject) {
 export async function handleMessage(
     api: ApiPromise,
     ws: WebSocket,
-    data: RawData
+    data: RawData,
+    encointer_rpc: WebSocket
 ) {
     let request = JSON.parse(data.toString());
-    //relay(ws, data);
+    //relay(ws, data, encointer_rpc);
     let method = request.method;
     let accountId;
     let cid;
@@ -117,6 +110,6 @@ export async function handleMessage(
         case "state_getMetadata":
         case "system_health":
         case "system_properties":
-            relay(ws, data);
+            relay(ws, data, encointer_rpc);
     }
 }

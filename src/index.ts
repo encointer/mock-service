@@ -30,13 +30,22 @@ async function main() {
     const wss = new WebSocketServer({ port: 8080 });
 
     wss.on("connection", function connection(ws) {
-        ws.on("message", async function message(data) {
-            //console.log(data.toString());s
-            await handleMessage(api, ws, data);
+        const encointer_rpc = new WebSocket(encointer_rpc_endpoint);
+        encointer_rpc.on("open", function open() {
+            encointer_rpc.on("message", function message(data) {
+                ws.send(data.toString());
+            });
+            ws.on("message", async function message(data) {
+                await handleMessage(api, ws, data, encointer_rpc);
+            });
         });
     });
 
-    await newCommunity('0x73716d3176', 'Test Community', Scenario.AllBootstrappersAllAssigned);
+    await newCommunity(
+        "0x73716d3176",
+        "Test Community",
+        Scenario.AllBootstrappersAllAssigned
+    );
 }
 
 (async () => {
