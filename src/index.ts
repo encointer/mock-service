@@ -36,7 +36,7 @@ async function main() {
         });
     });
 
-    await newCommunity('abcd', 'Test Community', Scenario.AllBootstrappersAllAssigned);
+    await newCommunity('0x73716d3176', 'Test Community', Scenario.AllBootstrappersAllAssigned);
 }
 
 (async () => {

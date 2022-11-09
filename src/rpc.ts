@@ -1,24 +1,44 @@
-import { advancePhase, getAllCommunites } from "./lib/runtime";
-import { getCommunityObject, putCommunityObject, getAllCommunitiyObjects } from "./db";
+import {
+    advancePhase,
+    getAggregatedAccountData,
+    getAllBalances,
+    getAllCommunites,
+    getReputations,
+} from "./lib/runtime";
+import {
+    getCommunityObject,
+    putCommunityObject,
+    getAllCommunitiyObjects,
+} from "./db";
 import { ApiPromise } from "@polkadot/api";
 import { encointer_rpc_endpoint } from "./consts";
 import { getStorage } from "./storage";
 import { WebSocket, RawData } from "ws";
+import Geohash from "latlon-geohash";
+import { CommunityIdentifierObject } from "./types";
 
 function relay(ws: WebSocket, data: RawData) {
     const encointer_rpc = new WebSocket(encointer_rpc_endpoint);
     let request = JSON.parse(data.toString());
-    console.log(`${request.method} request:`)
-    console.log(request)
+    console.log(`${request.method} request:`);
+    console.log(request);
     encointer_rpc.on("open", function open() {
         encointer_rpc.send(data);
     });
     encointer_rpc.on("message", function message(data) {
-        console.log(`${request.method} response:`)
-        console.log(data.toString())
+        console.log(`${request.method} response:`);
+        console.log(data.toString());
         ws.send(data.toString());
     });
 }
+
+function getLocations(cid: CommunityIdentifierObject) {
+    // compute center of geohash
+    let geohash = Buffer.from(cid.geohash.slice(2), "hex").toString();
+    let location = Geohash.decode(geohash);
+    return [location];
+}
+
 export async function handleMessage(
     api: ApiPromise,
     ws: WebSocket,
@@ -30,17 +50,35 @@ export async function handleMessage(
     switch (method) {
         case "encointer_getLocations":
             let cid = request.params[0];
+            ws.send(JSON.stringify(getLocations(cid)));
             break;
         case "encointer_getAllBalances":
-            let accountId = request.params[0]
+            let accountId = request.params[0];
+            ws.send(
+                JSON.stringify(
+                    getAllBalances(await getAllCommunitiyObjects(), accountId)
+                )
+            );
             break;
         case "encointer_getReputations":
-            accountId = request.params[0]
-
+            accountId = request.params[0];
+            ws.send(
+                JSON.stringify(
+                    getReputations(await getAllCommunitiyObjects(), accountId)
+                )
+            );
             break;
         case "encointer_getAggregatedAccountData":
             cid = request.params[0];
             accountId = request.params[1];
+            ws.send(
+                JSON.stringify(
+                    getAggregatedAccountData(
+                        await getCommunityObject(cid),
+                        accountId
+                    )
+                )
+            );
             break;
         case "encointer_getAllCommunities":
             let allCommunities = await getAllCommunitiyObjects();
@@ -52,8 +90,8 @@ export async function handleMessage(
             let method = extrinsic.method.method;
             let pallet = extrinsic.method.section;
             let args = extrinsic.method.args;
-            let signer = extrinsic.signer.toString()
-            console.log(method, pallet, args, signer)
+            let signer = extrinsic.signer.toString();
+            console.log(method, pallet, args, signer);
             break;
         case "author_unwatchExtrinsic":
             break;
