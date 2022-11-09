@@ -16,6 +16,7 @@ import { getStorage } from "./storage";
 import { WebSocket, RawData } from "ws";
 import Geohash from "latlon-geohash";
 import { CommunityIdentifierObject } from "./types";
+import { cidToString } from "./lib/util";
 
 function relay(ws: WebSocket, data: RawData) {
     const encointer_rpc = new WebSocket(encointer_rpc_endpoint);
@@ -47,13 +48,15 @@ export async function handleMessage(
     let request = JSON.parse(data.toString());
     //relay(ws, data);
     let method = request.method;
+    let accountId;
+    let cid;
     switch (method) {
         case "encointer_getLocations":
-            let cid = request.params[0];
+            cid = request.params[0];
             ws.send(JSON.stringify(getLocations(cid)));
             break;
         case "encointer_getAllBalances":
-            let accountId = request.params[0];
+            accountId = request.params[0];
             ws.send(
                 JSON.stringify(
                     getAllBalances(await getAllCommunitiyObjects(), accountId)
@@ -69,7 +72,8 @@ export async function handleMessage(
             );
             break;
         case "encointer_getAggregatedAccountData":
-            cid = request.params[0];
+            cid = cidToString(request.params[0]);
+            console.log(cid);
             accountId = request.params[1];
             ws.send(
                 JSON.stringify(
@@ -82,8 +86,7 @@ export async function handleMessage(
             break;
         case "encointer_getAllCommunities":
             let allCommunities = await getAllCommunitiyObjects();
-            let result = getAllCommunites(allCommunities);
-            ws.send(JSON.stringify(result));
+            ws.send(JSON.stringify(getAllCommunites(allCommunities)));
             break;
         case "author_submitAndWatchExtrinsic":
             let extrinsic = api.tx(request.params[0]);
