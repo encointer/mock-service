@@ -20,13 +20,22 @@ import {
     BalanceRpcItem,
     AggregatedAccountData,
     AllCommunitiesRpcItem,
+    Scenario,
 } from "../types";
 import { getParticipantsEligibleForReward } from "./meetupValidation";
 import { parseCid } from "./util";
 
-export async function newCommunity(cid: CommunityIdentifier, name: string) {
-    if (await getCommunityObject(cid)) throw new CommuniyAlreadyExists();
+export async function newCommunity(
+    cid: CommunityIdentifier,
+    name: string,
+    scenario: Scenario
+) {
+    try {
+        if (await getCommunityObject(cid)) throw new CommuniyAlreadyExists();
+    } catch {}
     const communityObject: CommunityObject = {
+        scenario,
+        createdAt: new Date().toISOString(),
         name,
         currentPhase: "registering",
         income: 10,

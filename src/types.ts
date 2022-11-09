@@ -19,7 +19,16 @@ export type Attestations = { [key: Address]: AttestationArray };
 export type Votes = { [key: Address]: number };
 export type AllCommunities = { [key: string]: CommunityObject };
 
+export enum Scenario {
+    AllReputablesAllAssigned,
+    AllBootstrappersAllAssigned,
+    AllNewbiesAllAssignes,
+    AllNewbiesNoneAssigned,
+  }
+
 export type CommunityObject = {
+    createdAt: string,
+    scenario: Scenario,
     name: string;
     currentPhase: Phase;
     income: number;
