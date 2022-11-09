@@ -73,7 +73,6 @@ export async function handleMessage(
             break;
         case "encointer_getAggregatedAccountData":
             cid = cidToString(request.params[0]);
-            console.log(cid);
             accountId = request.params[1];
             ws.send(
                 JSON.stringify(
