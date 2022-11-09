@@ -12,7 +12,7 @@ import {
     transferAll,
 } from "./runtime";
 import { describe, expect } from "@jest/globals";
-import { AllCommunities, CommunityObject } from "../types";
+import { AllCommunities, CommunityObject, Scenario } from "../types";
 import {
     InsufficientBalance,
     ParticipantNotRegistered,
@@ -23,6 +23,8 @@ import {
 
 function getBaseCommunityObject(): CommunityObject {
     return {
+        scenario: Scenario.AllBootstrappersAllAssigned,
+        createdAt: new Date().toISOString(),
         name: "TestCommunity",
         currentPhase: "registering",
         income: 10,
