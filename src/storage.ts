@@ -1,26 +1,18 @@
 import { ApiPromise } from "@polkadot/api";
+import { getCommunityObject } from "./db";
+import { cidToString } from "./lib/util";
 
-export function getStorage(api: ApiPromise, key: string) {
+export async function getStorage(api: ApiPromise, key: string) {
     key = key.substring(2);
     let module = key.substring(0, 32);
     let method = key.substring(32, 64);
     let params = key.substring(64);
-    console.log(params);
-    try {
-        let methodObject = modules[module][method];
-        console.log(methodObject.call.name);
-        let result = methodObject.call(
-            decodeParams(api, methodObject.paramTypes, params)
-        );
-        //return api.createType(methodObject.returnType, result).toU8a();
-    } catch (e) {
-        console.log(e);
-        console.log("-----");
-        console.log("ERROR");
-        console.log(module);
-        console.log(method);
-        console.log("-----");
-    }
+    let methodObject = modules[module][method];
+    console.log(methodObject.call.name);
+    let result = await methodObject.call(
+        decodeParams(api, methodObject.paramTypes, params)
+    );
+    return api.createType(methodObject.returnType, result).toU8a();
 }
 
 export function decodeParams(
@@ -859,8 +851,16 @@ function EncointerCommunities_Bootstrappers(params: any[]) {
 function EncointerCommunities_CommunityIdentifiers(params: any[]) {
     console.log(params);
 }
-function EncointerCommunities_CommunityMetadata(params: any[]) {
+async function EncointerCommunities_CommunityMetadata(params: any[]) {
     console.log(params);
+    let name = (await getCommunityObject(cidToString(params[0]))).name;
+    return {
+        name,
+        symbol: "SYM",
+        assets: "IpfsCid",
+        theme: null,
+        url: null,
+    };
 }
 function EncointerCommunities_NominalIncome(params: any[]) {
     console.log(params);
