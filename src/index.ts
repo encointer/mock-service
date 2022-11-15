@@ -42,7 +42,7 @@ async function main() {
     });
 
     await newCommunity(
-        "0x73716d3176",
+        "0x7530716a390x77f79df7",
         "Test Community",
         Scenario.AllBootstrappersAllAssigned
     );

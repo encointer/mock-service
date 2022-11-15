@@ -12,7 +12,7 @@ export async function getStorage(api: ApiPromise, key: string) {
     let result = await methodObject.call(
         decodeParams(api, methodObject.paramTypes, params)
     );
-    return api.createType(methodObject.returnType, result).toU8a();
+    return api.createType(methodObject.returnType, result).toHex();
 }
 
 export function decodeParams(
@@ -879,6 +879,9 @@ function EncointerBalances_Balance(params: any[]) {
 }
 function EncointerBalances_DemurragePerBlock(params: any[]) {
     console.log(params);
+    return {
+        bits: 4865414313507,
+    };
 }
 function EncointerBalances_FeeConversionFactor(params: any[]) {
     console.log(params);

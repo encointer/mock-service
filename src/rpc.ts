@@ -32,6 +32,10 @@ function getLocations(cid: CommunityIdentifierObject) {
     return [location];
 }
 
+function sendResponse(ws: WebSocket, id:number, result: string) {
+    ws.send(JSON.stringify({"jsonrpc":"2.0", result, id}))
+}
+
 export async function handleMessage(
     api: ApiPromise,
     ws: WebSocket,
@@ -100,7 +104,7 @@ export async function handleMessage(
             case "state_subscribeStorage":
                 break;
             case "state_getStorage":
-                ws.send(await getStorage(api, request.params[0]));
+                sendResponse(ws, request.id, await getStorage(api, request.params[0]))
                 break;
             case "advancePhase":
                 cid = request.params[0];
