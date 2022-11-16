@@ -1,6 +1,8 @@
 import { ApiPromise } from "@polkadot/api";
 import { getCommunityObject } from "./db";
 import { cidToString } from "./lib/util";
+import { getNumParticipants, getParticipantIndex } from "./storageHelpers";
+import { Scenario } from "./types";
 
 export async function getStorage(api: ApiPromise, key: string) {
     key = key.substring(2);
@@ -12,6 +14,7 @@ export async function getStorage(api: ApiPromise, key: string) {
     let result = await methodObject.call(
         decodeParams(api, methodObject.paramTypes, params)
     );
+    console.log(result);
     return api.createType(methodObject.returnType, result).toHex();
 }
 
@@ -742,6 +745,7 @@ function EncointerScheduler_NextPhaseTimestamp(params: any[]) {
 }
 function EncointerScheduler_PhaseDurations(params: any[]) {
     console.log(params);
+    return 604800000;
 }
 function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {
     console.log(params);
@@ -749,8 +753,9 @@ function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {
 function EncointerCeremonies_BootstrapperRegistry(params: any[]) {
     console.log(params);
 }
-function EncointerCeremonies_BootstrapperIndex(params: any[]) {
+async function EncointerCeremonies_BootstrapperIndex(params: any[]) {
     console.log(params);
+    return await getParticipantIndex(params, "Bootstrapper");
 }
 function EncointerCeremonies_BootstrapperCount(params: any[]) {
     console.log(params);
@@ -758,8 +763,9 @@ function EncointerCeremonies_BootstrapperCount(params: any[]) {
 function EncointerCeremonies_ReputableRegistry(params: any[]) {
     console.log(params);
 }
-function EncointerCeremonies_ReputableIndex(params: any[]) {
+async function EncointerCeremonies_ReputableIndex(params: any[]) {
     console.log(params);
+    return await getParticipantIndex(params, "Reputable");
 }
 function EncointerCeremonies_ReputableCount(params: any[]) {
     console.log(params);
@@ -767,8 +773,9 @@ function EncointerCeremonies_ReputableCount(params: any[]) {
 function EncointerCeremonies_EndorseeRegistry(params: any[]) {
     console.log(params);
 }
-function EncointerCeremonies_EndorseeIndex(params: any[]) {
+async function EncointerCeremonies_EndorseeIndex(params: any[]) {
     console.log(params);
+    return await getParticipantIndex(params, "Endorsee");
 }
 function EncointerCeremonies_EndorseeCount(params: any[]) {
     console.log(params);
@@ -776,17 +783,35 @@ function EncointerCeremonies_EndorseeCount(params: any[]) {
 function EncointerCeremonies_NewbieRegistry(params: any[]) {
     console.log(params);
 }
-function EncointerCeremonies_NewbieIndex(params: any[]) {
+async function EncointerCeremonies_NewbieIndex(params: any[]) {
     console.log(params);
+    return await getParticipantIndex(params, "Newbie");
 }
 function EncointerCeremonies_NewbieCount(params: any[]) {
     console.log(params);
 }
-function EncointerCeremonies_AssignmentCounts(params: any[]) {
+async function EncointerCeremonies_AssignmentCounts(params: any[]) {
     console.log(params);
+    return {
+        bootstrappers: await getNumParticipants(params, "Bootstrapper"),
+        reputables: await getNumParticipants(params, "Reputable"),
+        endorsees: await getNumParticipants(params, "Endorsee"),
+        newbies: await getNumParticipants(params, "Newbie"),
+    };
 }
 function EncointerCeremonies_Assignments(params: any[]) {
     console.log(params);
+    const fakeAssignment = {
+        m: 1,
+        s1: 1,
+        s2: 1,
+    };
+
+    return {
+        bootstrappers_repuables: fakeAssignment,
+        endorsees: fakeAssignment,
+        newbies: fakeAssignment,
+    };
 }
 function EncointerCeremonies_ParticipantReputation(params: any[]) {
     console.log(params);
@@ -799,6 +824,7 @@ function EncointerCeremonies_EndorseesCount(params: any[]) {
 }
 function EncointerCeremonies_MeetupCount(params: any[]) {
     console.log(params);
+    return 1;
 }
 function EncointerCeremonies_AttestationRegistry(params: any[]) {
     console.log(params);
@@ -838,6 +864,7 @@ function EncointerCeremonies_ReputationLifetime(params: any[]) {
 }
 function EncointerCeremonies_MeetupTimeOffset(params: any[]) {
     console.log(params);
+    return 604800000;
 }
 function EncointerCommunities_CommunityIdentifiersByGeohash(params: any[]) {
     console.log(params);
@@ -845,8 +872,12 @@ function EncointerCommunities_CommunityIdentifiersByGeohash(params: any[]) {
 function EncointerCommunities_Locations(params: any[]) {
     console.log(params);
 }
-function EncointerCommunities_Bootstrappers(params: any[]) {
+async function EncointerCommunities_Bootstrappers(params: any[]) {
     console.log(params);
+    let communityObject = await getCommunityObject(cidToString(params[0]));
+    if (communityObject.scenario == Scenario.AllBootstrappersAllAssigned) {
+        return Object.keys(communityObject.participants);
+    } else return [];
 }
 function EncointerCommunities_CommunityIdentifiers(params: any[]) {
     console.log(params);

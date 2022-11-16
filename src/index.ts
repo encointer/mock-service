@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { encointer_rpc_endpoint } from "./consts";
 import { handleMessage } from "./rpc";
-import { putCommunityObject } from "./db";
+import { getCommunityObject, putCommunityObject } from "./db";
 import { CommunityObject, Scenario } from "./types";
 import { decodeParams, getStorage } from "./storage";
 import { WebSocketServer, WebSocket, RawData } from "ws";
@@ -46,6 +46,16 @@ async function main() {
         "Test Community",
         Scenario.AllBootstrappersAllAssigned
     );
+    let c = await getCommunityObject("0x7530716a390x77f79df7");
+    c.participants = {
+        "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": 0,
+        "5Hq1naLbJFSYzeVxPySmxH2qHgUBULQW9hPyNxKSuBGEJzSZ": 0,
+    };
+    c.ceremonies[0].participants = {
+        "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": "Bootstrapper",
+        "5Hq1naLbJFSYzeVxPySmxH2qHgUBULQW9hPyNxKSuBGEJzSZ": "Bootstrapper",
+    };
+    await putCommunityObject("0x7530716a390x77f79df7", c);
 }
 
 (async () => {
