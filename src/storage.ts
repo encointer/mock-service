@@ -1,6 +1,7 @@
 import { ApiPromise } from "@polkadot/api";
-import { getCommunityObject } from "./db";
-import { cidToString } from "./lib/util";
+import { getAllCommunitiyObjects, getCommunityObject } from "./db";
+import { getAllCommunites } from "./lib/runtime";
+import { cidToString, maybeHexToString, parseCid } from "./lib/util";
 import { getNumParticipants, getParticipantIndex } from "./storageHelpers";
 import { Scenario } from "./types";
 
@@ -621,177 +622,95 @@ const modules: {
 };
 
 function System_Account(params: any[]) {
-    console.log(params);
+    return {
+        nonce: 0,
+        consumers: 0,
+        providers: 1,
+        sufficients: 0,
+        data: {
+            free: 11529215046068,
+            reserved: 0,
+            miscFrozen: 0,
+            feeFrozen: 0,
+        },
+    };
 }
-function System_ExtrinsicCount(params: any[]) {
-    console.log(params);
-}
-function System_BlockWeight(params: any[]) {
-    console.log(params);
-}
-function System_AllExtrinsicsLen(params: any[]) {
-    console.log(params);
-}
-function System_BlockHash(params: any[]) {
-    console.log(params);
-}
-function System_ExtrinsicData(params: any[]) {
-    console.log(params);
-}
-function System_Number(params: any[]) {
-    console.log(params);
-}
-function System_ParentHash(params: any[]) {
-    console.log(params);
-}
-function System_Digest(params: any[]) {
-    console.log(params);
-}
-function System_Events(params: any[]) {
-    console.log(params);
-}
-function System_EventCount(params: any[]) {
-    console.log(params);
-}
-function System_EventTopics(params: any[]) {
-    console.log(params);
-}
-function System_LastRuntimeUpgrade(params: any[]) {
-    console.log(params);
-}
-function System_UpgradedToU32RefCount(params: any[]) {
-    console.log(params);
-}
-function System_UpgradedToTripleRefCount(params: any[]) {
-    console.log(params);
-}
-function System_ExecutionPhase(params: any[]) {
-    console.log(params);
-}
-function RandomnessCollectiveFlip_RandomMaterial(params: any[]) {
-    console.log(params);
-}
-function Timestamp_Now(params: any[]) {
-    console.log(params);
-}
-function Timestamp_DidUpdate(params: any[]) {
-    console.log(params);
-}
-function Sudo_Key(params: any[]) {
-    console.log(params);
-}
-function Balances_TotalIssuance(params: any[]) {
-    console.log(params);
-}
-function Balances_Account(params: any[]) {
-    console.log(params);
-}
+function System_ExtrinsicCount(params: any[]) {}
+function System_BlockWeight(params: any[]) {}
+function System_AllExtrinsicsLen(params: any[]) {}
+function System_BlockHash(params: any[]) {}
+function System_ExtrinsicData(params: any[]) {}
+function System_Number(params: any[]) {}
+function System_ParentHash(params: any[]) {}
+function System_Digest(params: any[]) {}
+function System_Events(params: any[]) {}
+function System_EventCount(params: any[]) {}
+function System_EventTopics(params: any[]) {}
+function System_LastRuntimeUpgrade(params: any[]) {}
+function System_UpgradedToU32RefCount(params: any[]) {}
+function System_UpgradedToTripleRefCount(params: any[]) {}
+function System_ExecutionPhase(params: any[]) {}
+function RandomnessCollectiveFlip_RandomMaterial(params: any[]) {}
+function Timestamp_Now(params: any[]) {}
+function Timestamp_DidUpdate(params: any[]) {}
+function Sudo_Key(params: any[]) {}
+function Balances_TotalIssuance(params: any[]) {}
+function Balances_Account(params: any[]) {}
 function Balances_Locks(params: any[]) {
-    console.log(params);
+    return [];
 }
-function Balances_Reserves(params: any[]) {
-    console.log(params);
-}
-function Balances_StorageVersion(params: any[]) {
-    console.log(params);
-}
-function TransactionPayment_NextFeeMultiplier(params: any[]) {
-    console.log(params);
-}
-function TransactionPayment_StorageVersion(params: any[]) {
-    console.log(params);
-}
-function Grandpa_State(params: any[]) {
-    console.log(params);
-}
-function Grandpa_PendingChange(params: any[]) {
-    console.log(params);
-}
-function Grandpa_NextForced(params: any[]) {
-    console.log(params);
-}
-function Grandpa_Stalled(params: any[]) {
-    console.log(params);
-}
-function Grandpa_CurrentSetId(params: any[]) {
-    console.log(params);
-}
-function Grandpa_SetIdSession(params: any[]) {
-    console.log(params);
-}
-function Proxy_Proxies(params: any[]) {
-    console.log(params);
-}
-function Proxy_Announcements(params: any[]) {
-    console.log(params);
-}
-function Scheduler_Agenda(params: any[]) {
-    console.log(params);
-}
-function Scheduler_Lookup(params: any[]) {
-    console.log(params);
-}
+function Balances_Reserves(params: any[]) {}
+function Balances_StorageVersion(params: any[]) {}
+function TransactionPayment_NextFeeMultiplier(params: any[]) {}
+function TransactionPayment_StorageVersion(params: any[]) {}
+function Grandpa_State(params: any[]) {}
+function Grandpa_PendingChange(params: any[]) {}
+function Grandpa_NextForced(params: any[]) {}
+function Grandpa_Stalled(params: any[]) {}
+function Grandpa_CurrentSetId(params: any[]) {}
+function Grandpa_SetIdSession(params: any[]) {}
+function Proxy_Proxies(params: any[]) {}
+function Proxy_Announcements(params: any[]) {}
+function Scheduler_Agenda(params: any[]) {}
+function Scheduler_Lookup(params: any[]) {}
 function EncointerScheduler_CurrentCeremonyIndex(params: any[]) {
-    console.log(params);
+    return 0;
 }
-function EncointerScheduler_LastCeremonyBlock(params: any[]) {
-    console.log(params);
-}
+function EncointerScheduler_LastCeremonyBlock(params: any[]) {}
 function EncointerScheduler_CurrentPhase(params: any[]) {
-    console.log(params);
+    return "Registering";
 }
 function EncointerScheduler_NextPhaseTimestamp(params: any[]) {
-    console.log(params);
+    var date = new Date();
+    date.setDate(date.getDate() + 2);
+    const timestampInSeconds = Math.floor(date.getTime() / 1000);
+    return timestampInSeconds;
 }
 function EncointerScheduler_PhaseDurations(params: any[]) {
-    console.log(params);
-    return 604800000;
+    return 1668729600000;
 }
-function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_BootstrapperRegistry(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {}
+function EncointerCeremonies_BootstrapperRegistry(params: any[]) {}
 async function EncointerCeremonies_BootstrapperIndex(params: any[]) {
-    console.log(params);
     return await getParticipantIndex(params, "Bootstrapper");
 }
-function EncointerCeremonies_BootstrapperCount(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_ReputableRegistry(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_BootstrapperCount(params: any[]) {}
+function EncointerCeremonies_ReputableRegistry(params: any[]) {}
 async function EncointerCeremonies_ReputableIndex(params: any[]) {
-    console.log(params);
     return await getParticipantIndex(params, "Reputable");
 }
-function EncointerCeremonies_ReputableCount(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_EndorseeRegistry(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_ReputableCount(params: any[]) {}
+function EncointerCeremonies_EndorseeRegistry(params: any[]) {}
 async function EncointerCeremonies_EndorseeIndex(params: any[]) {
-    console.log(params);
     return await getParticipantIndex(params, "Endorsee");
 }
-function EncointerCeremonies_EndorseeCount(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_NewbieRegistry(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_EndorseeCount(params: any[]) {}
+function EncointerCeremonies_NewbieRegistry(params: any[]) {}
 async function EncointerCeremonies_NewbieIndex(params: any[]) {
-    console.log(params);
     return await getParticipantIndex(params, "Newbie");
 }
-function EncointerCeremonies_NewbieCount(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_NewbieCount(params: any[]) {}
 async function EncointerCeremonies_AssignmentCounts(params: any[]) {
-    console.log(params);
     return {
         bootstrappers: await getNumParticipants(params, "Bootstrapper"),
         reputables: await getNumParticipants(params, "Reputable"),
@@ -800,7 +719,6 @@ async function EncointerCeremonies_AssignmentCounts(params: any[]) {
     };
 }
 function EncointerCeremonies_Assignments(params: any[]) {
-    console.log(params);
     const fakeAssignment = {
         m: 1,
         s1: 1,
@@ -813,77 +731,42 @@ function EncointerCeremonies_Assignments(params: any[]) {
         newbies: fakeAssignment,
     };
 }
-function EncointerCeremonies_ParticipantReputation(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_Endorsees(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_EndorseesCount(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_ParticipantReputation(params: any[]) {}
+function EncointerCeremonies_Endorsees(params: any[]) {}
+function EncointerCeremonies_EndorseesCount(params: any[]) {}
 function EncointerCeremonies_MeetupCount(params: any[]) {
-    console.log(params);
     return 1;
 }
-function EncointerCeremonies_AttestationRegistry(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_AttestationIndex(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_AttestationCount(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_MeetupParticipantCountVote(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_CeremonyReward(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_LocationTolerance(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_TimeTolerance(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_IssuedRewards(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_InactivityCounters(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_InactivityTimeout(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_EndorsementTicketsPerBootstrapper(params: any[]) {
-    console.log(params);
-}
-function EncointerCeremonies_ReputationLifetime(params: any[]) {
-    console.log(params);
-}
+function EncointerCeremonies_AttestationRegistry(params: any[]) {}
+function EncointerCeremonies_AttestationIndex(params: any[]) {}
+function EncointerCeremonies_AttestationCount(params: any[]) {}
+function EncointerCeremonies_MeetupParticipantCountVote(params: any[]) {}
+function EncointerCeremonies_CeremonyReward(params: any[]) {}
+function EncointerCeremonies_LocationTolerance(params: any[]) {}
+function EncointerCeremonies_TimeTolerance(params: any[]) {}
+function EncointerCeremonies_IssuedRewards(params: any[]) {}
+function EncointerCeremonies_InactivityCounters(params: any[]) {}
+function EncointerCeremonies_InactivityTimeout(params: any[]) {}
+function EncointerCeremonies_EndorsementTicketsPerBootstrapper(params: any[]) {}
+function EncointerCeremonies_ReputationLifetime(params: any[]) {}
 function EncointerCeremonies_MeetupTimeOffset(params: any[]) {
-    console.log(params);
     return 604800000;
 }
-function EncointerCommunities_CommunityIdentifiersByGeohash(params: any[]) {
-    console.log(params);
-}
-function EncointerCommunities_Locations(params: any[]) {
-    console.log(params);
-}
+function EncointerCommunities_CommunityIdentifiersByGeohash(params: any[]) {}
+function EncointerCommunities_Locations(params: any[]) {}
 async function EncointerCommunities_Bootstrappers(params: any[]) {
-    console.log(params);
     let communityObject = await getCommunityObject(cidToString(params[0]));
     if (communityObject.scenario == Scenario.AllBootstrappersAllAssigned) {
         return Object.keys(communityObject.participants);
     } else return [];
 }
-function EncointerCommunities_CommunityIdentifiers(params: any[]) {
-    console.log(params);
+async function EncointerCommunities_CommunityIdentifiers(params: any[]) {
+    let allCommunities = await getAllCommunitiyObjects();
+    let cids = Object.keys(allCommunities).map(parseCid);
+    cids.forEach(cid => cid.geohash = maybeHexToString(cid.geohash))
+    return cids
 }
 async function EncointerCommunities_CommunityMetadata(params: any[]) {
-    console.log(params);
     let name = (await getCommunityObject(cidToString(params[0]))).name;
     return {
         name,
@@ -893,33 +776,16 @@ async function EncointerCommunities_CommunityMetadata(params: any[]) {
         url: null,
     };
 }
-function EncointerCommunities_NominalIncome(params: any[]) {
-    console.log(params);
-}
-function EncointerCommunities_MinSolarTripTimeS(params: any[]) {
-    console.log(params);
-}
-function EncointerCommunities_MaxSpeedMps(params: any[]) {
-    console.log(params);
-}
-function EncointerBalances_TotalIssuance(params: any[]) {
-    console.log(params);
-}
-function EncointerBalances_Balance(params: any[]) {
-    console.log(params);
-}
+function EncointerCommunities_NominalIncome(params: any[]) {}
+function EncointerCommunities_MinSolarTripTimeS(params: any[]) {}
+function EncointerCommunities_MaxSpeedMps(params: any[]) {}
+function EncointerBalances_TotalIssuance(params: any[]) {}
+function EncointerBalances_Balance(params: any[]) {}
 function EncointerBalances_DemurragePerBlock(params: any[]) {
-    console.log(params);
     return {
-        bits: 4865414313507,
+        bits: 0,
     };
 }
-function EncointerBalances_FeeConversionFactor(params: any[]) {
-    console.log(params);
-}
-function EncointerBazaar_BusinessRegistry(params: any[]) {
-    console.log(params);
-}
-function EncointerBazaar_OfferingRegistry(params: any[]) {
-    console.log(params);
-}
+function EncointerBalances_FeeConversionFactor(params: any[]) {}
+function EncointerBazaar_BusinessRegistry(params: any[]) {}
+function EncointerBazaar_OfferingRegistry(params: any[]) {}

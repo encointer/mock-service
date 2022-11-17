@@ -248,7 +248,7 @@ export function getAllBalances(
         if (balance) {
             balances.push([
                 parseCid(cid),
-                { principal: balance, lastUpdate: 1337 },
+                { principal: balance, lastUpdate: 1 },
             ]);
         }
     }

@@ -11,10 +11,10 @@ async function main() {
     const wsProvider = new WsProvider(encointer_rpc_endpoint);
     const api = await ApiPromise.create({ provider: wsProvider });
 
-    getStorage(
-        api,
-        "0xa7d291a8132b2cc65c41da45f4de76797f0adfa903215393e9b5557e5aa6fb6480da1a598da1af38c09c736af452123a7530716a3977f79df7130000007893a8800ee642af41e41f005478199c246068b38f2dd35b1a9e4808edd102affdbb142f290b9d97ada61a944813db73"
-    );
+    // getStorage(
+    //     api,
+    //     "0xa7d291a8132b2cc65c41da45f4de76797f0adfa903215393e9b5557e5aa6fb6480da1a598da1af38c09c736af452123a7530716a3977f79df7130000007893a8800ee642af41e41f005478199c246068b38f2dd35b1a9e4808edd102affdbb142f290b9d97ada61a944813db73"
+    // );
     //console.log(decodeParams(api, ["EncointerPrimitivesCommunitiesCommunityIdentifier"], "7ecf9737e928fd81ba70d87bba5f962d7530716a3977f79df7"));
 
     // TODO find how to read storage type in order to automate the param lookup
@@ -33,6 +33,7 @@ async function main() {
         const encointer_rpc = new WebSocket(encointer_rpc_endpoint);
         encointer_rpc.on("open", function open() {
             encointer_rpc.on("message", function message(data) {
+                //console.log(data.toString())
                 ws.send(data.toString());
             });
             ws.on("message", async function message(data) {
@@ -56,7 +57,28 @@ async function main() {
         "5Hq1naLbJFSYzeVxPySmxH2qHgUBULQW9hPyNxKSuBGEJzSZ": "Bootstrapper",
     };
     await putCommunityObject("0x7530716a390x77f79df7", c);
+
+
+
+    await newCommunity(
+        "0x73716d31760xf08c911c",
+        "Meditarranea",
+        Scenario.AllBootstrappersAllAssigned
+    );
+
+    c = await getCommunityObject("0x73716d31760xf08c911c");
+    c.participants = {
+        "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": 1.337,
+    };
+    c.ceremonies[0].participants = {
+        "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": "Bootstrapper",
+    };
+    await putCommunityObject("0x73716d31760xf08c911c", c);
+
+
 }
+
+
 
 (async () => {
     await main();
