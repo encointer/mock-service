@@ -11,7 +11,7 @@ export type Reputation =
     | "UnverifiedReputable"
     | "VerifiedUnlinked"
     | "VerifiedLinked";
-export type Phase = "registering" | "assigning" | "attesting";
+export type Phase = "Registering" | "Assigning" | "Attesting";
 export type CommunityIdentifier = string;
 export type CommunityIdentifierObject = { geohash: string; digest: string };
 export type AttestationArray = Array<Address>;

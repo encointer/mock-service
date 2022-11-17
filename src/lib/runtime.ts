@@ -37,7 +37,7 @@ export async function newCommunity(
         scenario,
         createdAt: new Date().toISOString(),
         name,
-        currentPhase: "registering",
+        currentPhase: "Registering",
         income: 10,
         participants: {},
         ceremonies: [
@@ -55,9 +55,9 @@ export async function newCommunity(
 
 export function advancePhase(communityObject: CommunityObject) {
     let phase = communityObject.currentPhase;
-    const phases: Phase[] = ["registering", "assigning", "attesting"];
+    const phases: Phase[] = ["Registering", "Assigning", "Attesting"];
     let nextPhase = phases[(phases.indexOf(phase) + 1) % 3];
-    if (nextPhase === "attesting") {
+    if (nextPhase === "Attesting") {
         // create a new ceremony such that people can already register for the next ceremony.
         initCeremony(communityObject);
     }
@@ -82,7 +82,7 @@ export function registerParticipant(
     participant: Address,
     type: ParticipantType
 ) {
-    if (communityObject.currentPhase === "assigning")
+    if (communityObject.currentPhase === "Assigning")
         throw new WrongPhaseForRegistering();
     let ceremonies = communityObject.ceremonies;
     ceremonies[ceremonies.length - 1].participants[participant] = type;
@@ -102,7 +102,7 @@ export function submitAttestationsAndVote(
     attestations: AttestationArray,
     vote: number
 ) {
-    if (communityObject.currentPhase !== "attesting")
+    if (communityObject.currentPhase !== "Attesting")
         throw new WrongPhaseForSubmittingAttestations();
     let ceremonies = communityObject.ceremonies;
     let cindex = ceremonies.length - 2;
@@ -126,7 +126,7 @@ function addBalance(
 }
 export function claimRewards(communityObject: CommunityObject) {
     // early rewards not possible for simplicity
-    if (communityObject.currentPhase !== "registering")
+    if (communityObject.currentPhase !== "Registering")
         throw new WrongPhaseForClaimingRewards();
     let ceremonies = communityObject.ceremonies;
     let ceremonyIndex = ceremonies.length - 2;
@@ -194,7 +194,7 @@ export function getAggregatedAccountData(
     participant: Address
 ): AggregatedAccountData {
     let cindex = communityObject.ceremonies.length - 1;
-    if (communityObject.currentPhase === "attesting") cindex -= 1;
+    if (communityObject.currentPhase === "Attesting") cindex -= 1;
     let global = {
         ceremonyPhase: communityObject.currentPhase,
         ceremonyIndex: cindex,
