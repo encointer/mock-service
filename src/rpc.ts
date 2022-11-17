@@ -48,6 +48,7 @@ export async function handleMessage(
         // relay(ws, data, encointer_rpc);
 
         let method = request.method;
+        console.log(method);
         let accountId;
         let cid;
         switch (method) {

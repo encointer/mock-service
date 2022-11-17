@@ -16,7 +16,7 @@ export async function getStorage(api: ApiPromise, key: string) {
         decodeParams(api, methodObject.paramTypes, params)
     );
     console.log(result);
-    return api.createType(methodObject.returnType, result).toHex();
+    return api.createType(methodObject.returnType, result).toHex(true);
 }
 
 export function decodeParams(
@@ -683,11 +683,18 @@ function EncointerScheduler_CurrentPhase(params: any[]) {
 function EncointerScheduler_NextPhaseTimestamp(params: any[]) {
     var date = new Date();
     date.setDate(date.getDate() + 2);
-    const timestampInSeconds = Math.floor(date.getTime() / 1000);
-    return timestampInSeconds;
+    date.setHours(0, 0, 0, 0);
+    return Math.floor(date.getTime());
 }
 function EncointerScheduler_PhaseDurations(params: any[]) {
-    return 1668729600000;
+    switch(params[0]){
+        case "Registering":
+            return 604800000
+        case "Assigning":
+            return 86400000
+        case "Attesting":
+            return 172800000
+    }
 }
 function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {}
 function EncointerCeremonies_BootstrapperRegistry(params: any[]) {}
@@ -750,7 +757,7 @@ function EncointerCeremonies_InactivityTimeout(params: any[]) {}
 function EncointerCeremonies_EndorsementTicketsPerBootstrapper(params: any[]) {}
 function EncointerCeremonies_ReputationLifetime(params: any[]) {}
 function EncointerCeremonies_MeetupTimeOffset(params: any[]) {
-    return 604800000;
+    return -2100000;
 }
 function EncointerCommunities_CommunityIdentifiersByGeohash(params: any[]) {}
 function EncointerCommunities_Locations(params: any[]) {}
@@ -771,7 +778,7 @@ async function EncointerCommunities_CommunityMetadata(params: any[]) {
     return {
         name,
         symbol: "SYM",
-        assets: "IpfsCid",
+        assets: "QmSpwTDiKbRVqHaV2LvaUVkwZkkuF8w1BjTjwXD9PEzHnd",
         theme: null,
         url: null,
     };
