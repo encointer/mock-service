@@ -8,8 +8,31 @@ import { WebSocketServer, WebSocket, RawData } from "ws";
 import { newCommunity } from "./lib/runtime";
 
 async function main() {
+    const types = {
+        CommunityIdentifier: {
+            geohash: "GeoHash",
+            digest: "CidDigest",
+        },
+        GeoHash: "[u8; 5]",
+        CidDigest: "[u8; 4]",
+    };
+    const signedExtensions = {
+        ChargeAssetTxPayment: {
+            extrinsic: {
+                tip: "Compact<Balance>",
+                assetId: "Option<CommunityIdentifier>",
+            },
+            payload: {},
+        },
+    };
+
     const wsProvider = new WsProvider(encointer_rpc_endpoint);
-    const api = await ApiPromise.create({ provider: wsProvider });
+    const api = await ApiPromise.create({
+        provider: wsProvider,
+        signedExtensions,
+        types
+    });
+    
     // getStorage(
     //     api,
     //     "0xa7d291a8132b2cc65c41da45f4de76797f0adfa903215393e9b5557e5aa6fb6480da1a598da1af38c09c736af452123a7530716a3977f79df7130000007893a8800ee642af41e41f005478199c246068b38f2dd35b1a9e4808edd102affdbb142f290b9d97ada61a944813db73"
@@ -57,8 +80,6 @@ async function main() {
     };
     await putCommunityObject("0x7530716a390x77f79df7", c);
 
-
-
     await newCommunity(
         "0x73716d31760xf08c911c",
         "Meditarranea",
@@ -70,14 +91,10 @@ async function main() {
         "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": 1.337,
     };
     c.ceremonies[0].participants = {
-        "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": "Bootstrapper",
+        //"5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": "Bootstrapper",
     };
     await putCommunityObject("0x73716d31760xf08c911c", c);
-
-
 }
-
-
 
 (async () => {
     await main();

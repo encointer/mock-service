@@ -625,10 +625,10 @@ function System_Account(params: any[]) {
     return {
         nonce: 0,
         consumers: 0,
-        providers: 1,
-        sufficients: 0,
+        providers: 0,
+        sufficients: 1,
         data: {
-            free: 11529215046068,
+            free: 0,
             reserved: 0,
             miscFrozen: 0,
             feeFrozen: 0,

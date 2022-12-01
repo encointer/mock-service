@@ -99,6 +99,42 @@ export async function handleMessage(
                 let signer = extrinsic.signer.toString();
                 console.log(request.params[0]);
                 console.log(method, pallet, args, signer);
+                const extrinsicSubscriptionHash = getRpcSubscriptionHash();
+                const block = await api.rpc.chain.getBlock();
+                ws.send(
+                    JSON.stringify({
+                        jsonrpc: "2.0",
+                        method: "author_extrinsicUpdate",
+                        params: {
+                            subscription: extrinsicSubscriptionHash,
+                            result: "ready",
+                        },
+                    })
+                );
+                ws.send(
+                    JSON.stringify({
+                        jsonrpc: "2.0",
+                        method: "author_extrinsicUpdate",
+                        params: {
+                            subscription: extrinsicSubscriptionHash,
+                            result: {
+                                inBlock: block,
+                            },
+                        },
+                    })
+                );
+                ws.send(
+                    JSON.stringify({
+                        jsonrpc: "2.0",
+                        method: "author_extrinsicUpdate",
+                        params: {
+                            subscription: extrinsicSubscriptionHash,
+                            result: {
+                                finalized: block,
+                            },
+                        },
+                    })
+                );
                 break;
             case "author_unwatchExtrinsic":
                 break;
@@ -118,7 +154,10 @@ export async function handleMessage(
                                 changes: [
                                     [
                                         request.params[0][0],
-                                        await getStorage(api, request.params[0][0]),
+                                        await getStorage(
+                                            api,
+                                            request.params[0][0]
+                                        ),
                                     ],
                                 ],
                             },
@@ -142,6 +181,8 @@ export async function handleMessage(
                 ws.send(communityObject.currentPhase);
                 break;
             case "chain_getBlockHash":
+            case "chain_getFinalizedHead":
+            case "chain_getHeader":
             case "state_getRuntimeVersion":
             case "system_chain":
             case "system_properties":
@@ -157,6 +198,7 @@ export async function handleMessage(
         if (e instanceof Error) {
             msg = e.message;
         } else msg = String(e);
+        console.log("ERROR:" + msg);
         ws.send("ERROR:" + msg);
     }
 }
