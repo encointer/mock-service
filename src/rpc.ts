@@ -1,40 +1,22 @@
+import { ApiPromise } from "@polkadot/api";
+import { WebSocket, RawData } from "ws";
 import {
     advancePhase,
-    getAggregatedAccountData,
-    getAllBalances,
-    getAllCommunites,
-    getReputations,
-} from "./lib/runtime";
-import {
-    getCommunityObject,
-    putCommunityObject,
-    getAllCommunitiyObjects,
-} from "./db";
-import { ApiPromise } from "@polkadot/api";
-import { encointer_rpc_endpoint } from "./consts";
-import { decodeParams, getStorage } from "./storage";
-import { WebSocket, RawData } from "ws";
-import Geohash from "latlon-geohash";
-import { CommunityIdentifierObject } from "./types";
-import { cidToString, getRpcSubscriptionHash } from "./lib/util";
-import { AnyJson } from "@polkadot/types-codec/types";
+    author_submitAndWatchExtrinsic,
+    encointer_getAggregatedAccountData,
+    encointer_getAllBalances,
+    encointer_getAllCommunities,
+    encointer_getLocations,
+    encointer_getReputations,
+    state_getStorage,
+    state_subscribeStorage,
+} from "./rpcMethods";
 
 function relay(ws: WebSocket, data: RawData, encointer_rpc: WebSocket) {
     let request = JSON.parse(data.toString());
     // console.log(`${request.method} request:`);
     // console.log(request);
     encointer_rpc.send(data);
-}
-
-function getLocations(cid: CommunityIdentifierObject) {
-    // compute center of geohash
-    let geohash = Buffer.from(cid.geohash.slice(2), "hex").toString();
-    let location = Geohash.decode(geohash);
-    return [{ lat: location.lat, lon: location.lon }];
-}
-
-function sendResponse(ws: WebSocket, id: number, result: AnyJson | string) {
-    ws.send(JSON.stringify({ jsonrpc: "2.0", result, id }));
 }
 
 export async function handleMessage(
@@ -45,140 +27,39 @@ export async function handleMessage(
 ) {
     try {
         let request = JSON.parse(data.toString());
-        // relay(ws, data, encointer_rpc);
-
         let method = request.method;
         console.log(method);
-        let accountId;
-        let cid;
+
         switch (method) {
             case "encointer_getLocations":
-                cid = request.params[0];
-                sendResponse(ws, request.id, getLocations(cid));
+                encointer_getLocations(api, ws, data);
                 break;
-
-            //OK
             case "encointer_getAllBalances":
-                accountId = request.params[0];
-                sendResponse(
-                    ws,
-                    request.id,
-                    getAllBalances(await getAllCommunitiyObjects(), accountId)
-                );
+                encointer_getAllBalances(api, ws, data);
                 break;
             case "encointer_getReputations":
-                accountId = request.params[0];
-                sendResponse(
-                    ws,
-                    request.id,
-                    getReputations(await getAllCommunitiyObjects(), accountId)
-                );
+                encointer_getReputations(api, ws, data);
                 break;
             case "encointer_getAggregatedAccountData":
-                console.log(request.params);
-                cid = cidToString(request.params[0]);
-                accountId = request.params[1];
-                sendResponse(
-                    ws,
-                    request.id,
-                    getAggregatedAccountData(
-                        await getCommunityObject(cid),
-                        accountId
-                    )
-                );
+                encointer_getAggregatedAccountData(api, ws, data);
                 break;
             case "encointer_getAllCommunities":
-                let allCommunities = await getAllCommunitiyObjects();
-                sendResponse(ws, request.id, getAllCommunites(allCommunities));
+                encointer_getAllCommunities(api, ws, data);
                 break;
             case "author_submitAndWatchExtrinsic":
-                let extrinsic = api.tx(request.params[0]);
-                let method = extrinsic.method.method;
-                let pallet = extrinsic.method.section;
-                let args = extrinsic.method.args;
-                let signer = extrinsic.signer.toString();
-                console.log(request.params[0]);
-                console.log(method, pallet, args, signer);
-                const extrinsicSubscriptionHash = getRpcSubscriptionHash();
-                const block = await api.rpc.chain.getBlock();
-                ws.send(
-                    JSON.stringify({
-                        jsonrpc: "2.0",
-                        method: "author_extrinsicUpdate",
-                        params: {
-                            subscription: extrinsicSubscriptionHash,
-                            result: "ready",
-                        },
-                    })
-                );
-                ws.send(
-                    JSON.stringify({
-                        jsonrpc: "2.0",
-                        method: "author_extrinsicUpdate",
-                        params: {
-                            subscription: extrinsicSubscriptionHash,
-                            result: {
-                                inBlock: block,
-                            },
-                        },
-                    })
-                );
-                ws.send(
-                    JSON.stringify({
-                        jsonrpc: "2.0",
-                        method: "author_extrinsicUpdate",
-                        params: {
-                            subscription: extrinsicSubscriptionHash,
-                            result: {
-                                finalized: block,
-                            },
-                        },
-                    })
-                );
+                author_submitAndWatchExtrinsic(api, ws, data);
                 break;
             case "author_unwatchExtrinsic":
+                // Swallow
                 break;
             case "state_subscribeStorage":
-                let subscriptionHash = getRpcSubscriptionHash();
-                sendResponse(ws, request.id, subscriptionHash);
-                ws.send(
-                    JSON.stringify({
-                        jsonrpc: "2.0",
-                        method: "state_storage",
-                        params: {
-                            subscription: subscriptionHash,
-                            result: {
-                                block: (
-                                    await api.rpc.chain.getBlock()
-                                ).hash.toHex(),
-                                changes: [
-                                    [
-                                        request.params[0][0],
-                                        await getStorage(
-                                            api,
-                                            request.params[0][0]
-                                        ),
-                                    ],
-                                ],
-                            },
-                        },
-                    })
-                );
-
+                state_subscribeStorage(api, ws, data);
                 break;
             case "state_getStorage":
-                sendResponse(
-                    ws,
-                    request.id,
-                    await getStorage(api, request.params[0])
-                );
+                state_getStorage(api, ws, data);
                 break;
             case "advancePhase":
-                cid = request.params[0];
-                let communityObject = await getCommunityObject(cid);
-                communityObject = advancePhase(communityObject);
-                await putCommunityObject(cid, communityObject);
-                ws.send(communityObject.currentPhase);
+                advancePhase(api, ws, data);
                 break;
             case "chain_getBlockHash":
             case "chain_getFinalizedHead":

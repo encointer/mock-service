@@ -53,7 +53,7 @@ export async function newCommunity(
     await putCommunityObject(cid, communityObject);
 }
 
-export function advancePhase(communityObject: CommunityObject) {
+export function advancePhaseForCommunity(communityObject: CommunityObject) {
     let phase = communityObject.currentPhase;
     const phases: Phase[] = ["Registering", "Assigning", "Attesting"];
     let nextPhase = phases[(phases.indexOf(phase) + 1) % 3];
