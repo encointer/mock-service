@@ -1,4 +1,6 @@
+import { AnyJson } from "@polkadot/types-codec/types";
 import { CommunityIdentifierObject } from "../types";
+import util from "util";
 
 export function getRpcSubscriptionHash() {
     var result = "";
@@ -32,4 +34,19 @@ export function parseCid(cid: string): CommunityIdentifierObject {
 
 export function cidToString(cid: CommunityIdentifierObject): string {
     return maybeStringToHex(cid.geohash) + maybeStringToHex(cid.digest);
+}
+
+export function logMessage(title: string, message: AnyJson | string) {
+    console.log("---");
+    console.log(title);
+    if (message) {
+        console.log("");
+        console.log(
+            util.inspect(message, {
+                showHidden: false,
+                depth: null,
+                colors: true,
+            })
+        );
+    }
 }

@@ -1,22 +1,33 @@
 import { ApiPromise } from "@polkadot/api";
+import { systemAccountStorageSubscriptionHash } from "./consts";
 import { getAllCommunitiyObjects, getCommunityObject } from "./db";
 import { getAllCommunites } from "./lib/runtime";
-import { cidToString, maybeHexToString, parseCid } from "./lib/util";
+import {
+    cidToString,
+    getRpcSubscriptionHash,
+    maybeHexToString,
+    parseCid,
+} from "./lib/util";
 import { getNumParticipants, getParticipantIndex } from "./storageHelpers";
 import { Scenario } from "./types";
 
+let nonce00 = 0
 export async function getStorage(api: ApiPromise, key: string) {
     key = key.substring(2);
     let module = key.substring(0, 32);
     let method = key.substring(32, 64);
     let params = key.substring(64);
     let methodObject = modules[module][method];
-    console.log(methodObject.call.name);
     let result = await methodObject.call(
         decodeParams(api, methodObject.paramTypes, params)
     );
-    console.log(result);
-    return api.createType(methodObject.returnType, result).toHex(true);
+    return {
+        result: api.createType(methodObject.returnType, result).toHex(true),
+        subscriptionHash:
+            methodObject.call.name == "System_Account"
+                ? systemAccountStorageSubscriptionHash
+                : getRpcSubscriptionHash(),
+    };
 }
 
 export function decodeParams(
@@ -623,7 +634,7 @@ const modules: {
 
 function System_Account(params: any[]) {
     return {
-        nonce: 0,
+        nonce: nonce00++,
         consumers: 0,
         providers: 0,
         sufficients: 1,
@@ -687,13 +698,13 @@ function EncointerScheduler_NextPhaseTimestamp(params: any[]) {
     return Math.floor(date.getTime());
 }
 function EncointerScheduler_PhaseDurations(params: any[]) {
-    switch(params[0]){
+    switch (params[0]) {
         case "Registering":
-            return 604800000
+            return 604800000;
         case "Assigning":
-            return 86400000
+            return 86400000;
         case "Attesting":
-            return 172800000
+            return 172800000;
     }
 }
 function EncointerCeremonies_BurnedBootstrapperNewbieTickets(params: any[]) {}
@@ -770,8 +781,8 @@ async function EncointerCommunities_Bootstrappers(params: any[]) {
 async function EncointerCommunities_CommunityIdentifiers(params: any[]) {
     let allCommunities = await getAllCommunitiyObjects();
     let cids = Object.keys(allCommunities).map(parseCid);
-    cids.forEach(cid => cid.geohash = maybeHexToString(cid.geohash))
-    return cids
+    cids.forEach((cid) => (cid.geohash = maybeHexToString(cid.geohash)));
+    return cids;
 }
 async function EncointerCommunities_CommunityMetadata(params: any[]) {
     let name = (await getCommunityObject(cidToString(params[0]))).name;

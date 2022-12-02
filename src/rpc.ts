@@ -1,8 +1,10 @@
 import { ApiPromise } from "@polkadot/api";
 import { WebSocket, RawData } from "ws";
+import { logMessage } from "./lib/util";
 import {
     advancePhase,
     author_submitAndWatchExtrinsic,
+    author_unwatchExtrinsic,
     encointer_getAggregatedAccountData,
     encointer_getAllBalances,
     encointer_getAllCommunities,
@@ -11,11 +13,9 @@ import {
     state_getStorage,
     state_subscribeStorage,
 } from "./rpcMethods";
+import { getStorage } from "./storage";
 
 function relay(ws: WebSocket, data: RawData, encointer_rpc: WebSocket) {
-    let request = JSON.parse(data.toString());
-    // console.log(`${request.method} request:`);
-    // console.log(request);
     encointer_rpc.send(data);
 }
 
@@ -28,7 +28,15 @@ export async function handleMessage(
     try {
         let request = JSON.parse(data.toString());
         let method = request.method;
-        console.log(method);
+
+        // if(method == "state_getStorage") {
+        //     await getStorage(api, request.params[0]);
+        // }
+        // if(method == "state_subscribeStorage") {
+        //     await getStorage(api, request.params[0][0]);
+        // }
+        // relay(ws, data, encointer_rpc);
+        // return
 
         switch (method) {
             case "encointer_getLocations":
@@ -50,7 +58,7 @@ export async function handleMessage(
                 author_submitAndWatchExtrinsic(api, ws, data);
                 break;
             case "author_unwatchExtrinsic":
-                // Swallow
+                author_unwatchExtrinsic(api, ws, data);
                 break;
             case "state_subscribeStorage":
                 state_subscribeStorage(api, ws, data);
@@ -62,6 +70,7 @@ export async function handleMessage(
                 advancePhase(api, ws, data);
                 break;
             case "chain_getBlockHash":
+            case "chain_getBlock":
             case "chain_getFinalizedHead":
             case "chain_getHeader":
             case "state_getRuntimeVersion":
@@ -79,7 +88,7 @@ export async function handleMessage(
         if (e instanceof Error) {
             msg = e.message;
         } else msg = String(e);
-        console.log("ERROR:" + msg);
+        logMessage("ERROR", msg);
         ws.send("ERROR:" + msg);
     }
 }
