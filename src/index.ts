@@ -76,6 +76,7 @@ async function main() {
     c = await getCommunityObject("0x73716d31760xf08c911c");
     c.participants = {
         "5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": 1.337,
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": 1.337,
     };
     c.ceremonies[0].participants = {
         //"5CtQDjtR43EiawMwG6K7QGFrdx9aiTddZefkBAGzWNXf7GEP": "Bootstrapper",
