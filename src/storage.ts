@@ -1,7 +1,6 @@
 import { ApiPromise } from "@polkadot/api";
 import { systemAccountStorageSubscriptionHash } from "./consts";
 import { getAllCommunitiyObjects, getCommunityObject } from "./db";
-import { getAllCommunites } from "./lib/runtime";
 import {
     cidToString,
     getRpcSubscriptionHash,
@@ -19,7 +18,7 @@ export async function getStorage(api: ApiPromise, key: string) {
     let method = key.substring(32, 64);
     let params = key.substring(64);
     let methodObject = modules[module][method];
-    console.log("Getting storage: " + methodObject.call.name);
+    console.log("Getting mock storage: " + methodObject.call.name);
     console.log("Key: " + key);
     console.log("Params:");
     console.log(

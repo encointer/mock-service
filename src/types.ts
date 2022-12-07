@@ -24,11 +24,11 @@ export enum Scenario {
     AllBootstrappersAllAssigned,
     AllNewbiesAllAssignes,
     AllNewbiesNoneAssigned,
-  }
+}
 
 export type CommunityObject = {
-    createdAt: string,
-    scenario: Scenario,
+    createdAt: string;
+    scenario: Scenario;
     name: string;
     currentPhase: Phase;
     income: number;

@@ -14,7 +14,6 @@ import {
     state_getStorage,
     state_subscribeStorage,
 } from "./rpcMethods";
-import { getStorage } from "./storage";
 
 function relay(ws: WebSocket, data: RawData, encointer_rpc: WebSocket) {
     encointer_rpc.send(data);

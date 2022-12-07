@@ -1,5 +1,5 @@
 import {
-    advancePhase,
+    advancePhaseForCommunity,
     claimRewards,
     getAggregatedAccountData,
     getAllBalances,
@@ -26,7 +26,7 @@ function getBaseCommunityObject(): CommunityObject {
         scenario: Scenario.AllBootstrappersAllAssigned,
         createdAt: new Date().toISOString(),
         name: "TestCommunity",
-        currentPhase: "registering",
+        currentPhase: "Registering",
         income: 10,
         participants: {},
         ceremonies: [
@@ -50,16 +50,16 @@ function getBaseAllCommunities(): AllCommunities {
 describe("advancePhase", () => {
     it("works", async () => {
         let co = getBaseCommunityObject();
-        expect(co.currentPhase).toBe("registering");
+        expect(co.currentPhase).toBe("Registering");
         expect(co.ceremonies.length).toBe(1);
-        co = advancePhase(co);
-        expect(co.currentPhase).toBe("assigning");
+        co = advancePhaseForCommunity(co);
+        expect(co.currentPhase).toBe("Assigning");
         expect(co.ceremonies.length).toBe(1);
-        co = advancePhase(co);
-        expect(co.currentPhase).toBe("attesting");
+        co = advancePhaseForCommunity(co);
+        expect(co.currentPhase).toBe("Attesting");
         expect(co.ceremonies.length).toBe(2);
-        co = advancePhase(co);
-        expect(co.currentPhase).toBe("registering");
+        co = advancePhaseForCommunity(co);
+        expect(co.currentPhase).toBe("Registering");
         expect(co.ceremonies.length).toBe(2);
     });
 });
@@ -74,7 +74,7 @@ describe("registerParticipant", () => {
             "UnverifiedReputable"
         );
 
-        co = advancePhase(co);
+        co = advancePhaseForCommunity(co);
         expect(() =>
             registerParticipant(co, "0xaddress1", "Reputable")
         ).toThrowError(WrongPhaseForRegistering);
@@ -87,8 +87,8 @@ describe("submitAttestationsAndVote", () => {
         expect(() =>
             submitAttestationsAndVote(co, "0xaddress", [], 0)
         ).toThrowError(WrongPhaseForSubmittingAttestations);
-        co = advancePhase(co);
-        co = advancePhase(co);
+        co = advancePhaseForCommunity(co);
+        co = advancePhaseForCommunity(co);
         expect(() =>
             submitAttestationsAndVote(co, "0xaddress", [], 0)
         ).toThrowError(ParticipantNotRegistered);
@@ -115,12 +115,12 @@ describe("submitAttestationsAndVote", () => {
 describe("claimRewards", () => {
     it("works", async () => {
         let co = getBaseCommunityObject();
-        co = advancePhase(co);
+        co = advancePhaseForCommunity(co);
         expect(() => claimRewards(co)).toThrowError(
             WrongPhaseForClaimingRewards
         );
-        co = advancePhase(co);
-        co = advancePhase(co);
+        co = advancePhaseForCommunity(co);
+        co = advancePhaseForCommunity(co);
 
         co.ceremonies[0] = {
             participants: {
@@ -202,8 +202,8 @@ describe("getBalance", () => {
 describe("getAggregatedAccountData", () => {
     it("works", async () => {
         let co = getBaseCommunityObject();
-        co = advancePhase(co);
-        co = advancePhase(co);
+        co = advancePhaseForCommunity(co);
+        co = advancePhaseForCommunity(co);
 
         co.ceremonies[0] = {
             participants: {
@@ -231,7 +231,7 @@ describe("getAggregatedAccountData", () => {
 
         expect(getAggregatedAccountData(co, "0xaddress")).toEqual({
             global: {
-                ceremonyPhase: "attesting",
+                ceremonyPhase: "Attesting",
                 ceremonyIndex: 0,
             },
             personal: {
@@ -243,7 +243,7 @@ describe("getAggregatedAccountData", () => {
             },
         });
 
-        co = advancePhase(co);
+        co = advancePhaseForCommunity(co);
 
         expect(
             getAggregatedAccountData(co, "0xaddress").personal?.participantType
@@ -253,7 +253,7 @@ describe("getAggregatedAccountData", () => {
         ).toEqual(1);
         expect(
             getAggregatedAccountData(co, "0xaddress").global.ceremonyPhase
-        ).toEqual("registering");
+        ).toEqual("Registering");
     });
 });
 
@@ -360,7 +360,7 @@ describe("getAllBalances", () => {
                 },
                 {
                     principal: 13,
-                    lastUpdate: 1337,
+                    lastUpdate: 1,
                 },
             ],
             [
@@ -370,7 +370,7 @@ describe("getAllBalances", () => {
                 },
                 {
                     principal: 2,
-                    lastUpdate: 1337,
+                    lastUpdate: 1,
                 },
             ],
         ]);
@@ -383,7 +383,7 @@ describe("getAllBalances", () => {
                 },
                 {
                     principal: 7,
-                    lastUpdate: 1337,
+                    lastUpdate: 1,
                 },
             ],
         ]);

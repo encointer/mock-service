@@ -20,7 +20,6 @@ import {
 import { CommunityIdentifierObject } from "./types";
 import { cidToString, getRpcSubscriptionHash, logMessage } from "./lib/util";
 import { getStorage } from "./storage";
-import { systemAccountStorageSubscriptionHash } from "./consts";
 
 let extrinsics: string[] = [];
 
@@ -252,9 +251,6 @@ export async function advancePhase(
     send(ws, communityObject.currentPhase);
 }
 
-// TODO: can we fake this such that the app believes that the extrinsic is included in the block
-// Check app, based on what it makes the notification that an extrinsic was successfull
-// and check the register button component
 export async function chain_getBlock(
     api: ApiPromise,
     ws: WebSocket,
