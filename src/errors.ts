@@ -9,11 +9,9 @@ export class WrongPhaseForSubmittingAttestations extends Error {
     message = "Wrong phase for submitting attestations.";
 }
 
-
 export class WrongPhaseForClaimingRewards extends Error {
     message = "Wrong phase for claiming rewards.";
 }
-
 
 export class ParticipantNotRegistered extends Error {
     message = "Participant is not registered.";
