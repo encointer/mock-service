@@ -6,7 +6,7 @@ An app to mock away the Encointer Runtime.
 
 Run app
 ```
-npm run
+npm start
 ```
 
 Run tests
