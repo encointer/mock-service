@@ -22,8 +22,10 @@ import { cidToString, getRpcSubscriptionHash, logMessage } from "./lib/util";
 import { getStorage } from "./storage";
 import { systemAccountStorageSubscriptionHash } from "./consts";
 
+let extrinsics: string[] = [];
+
 function send(ws: WebSocket, message: AnyJson | string) {
-    logMessage('Response from Mock Service', message)
+    logMessage("Response from Mock Service", message);
     ws.send(JSON.stringify(message));
 }
 function sendResponse(ws: WebSocket, id: number, result: AnyJson | string) {
@@ -159,7 +161,7 @@ export async function author_submitAndWatchExtrinsic(
         api,
         systemAccountStorageKey
     );
-    const block = (await api.rpc.chain.getFinalizedHead()).toHuman()
+    const block = (await api.rpc.chain.getFinalizedHead()).toHuman();
 
     send(ws, {
         jsonrpc: "2.0",
@@ -184,6 +186,7 @@ export async function author_submitAndWatchExtrinsic(
         },
     });
 
+    extrinsics.push(request.params[0]);
     // await new Promise((r) => setTimeout(r, 100));
     //     send(ws,
     //    {
@@ -247,4 +250,21 @@ export async function advancePhase(
     communityObject = advancePhaseForCommunity(communityObject);
     await putCommunityObject(cid, communityObject);
     send(ws, communityObject.currentPhase);
+}
+
+// TODO: can we fake this such that the app believes that the extrinsic is included in the block
+// Check app, based on what it makes the notification that an extrinsic was successfull
+// and check the register button component
+export async function chain_getBlock(
+    api: ApiPromise,
+    ws: WebSocket,
+    data: RawData
+) {
+    let request = JSON.parse(data.toString());
+
+    let block = JSON.parse((await api.rpc.chain.getBlock(request.params[0])).toString())
+
+    block.block.extrinsics = extrinsics//block.block.extrinsics.concat(extrinsics)
+    sendResponse(ws, request.id, block);
+    extrinsics = [];
 }

@@ -10,14 +10,26 @@ import {
 } from "./lib/util";
 import { getNumParticipants, getParticipantIndex } from "./storageHelpers";
 import { Scenario } from "./types";
+import util from "util";
 
-let nonce00 = 0
+let nonce00 = 0;
 export async function getStorage(api: ApiPromise, key: string) {
     key = key.substring(2);
     let module = key.substring(0, 32);
     let method = key.substring(32, 64);
     let params = key.substring(64);
     let methodObject = modules[module][method];
+    console.log("Getting storage: " + methodObject.call.name);
+    console.log("Key: " + key);
+    console.log("Params:");
+    console.log(
+        util.inspect(decodeParams(api, methodObject.paramTypes, params), {
+            showHidden: false,
+            depth: null,
+            colors: true,
+        })
+    );
+
     let result = await methodObject.call(
         decodeParams(api, methodObject.paramTypes, params)
     );
@@ -654,7 +666,29 @@ function System_ExtrinsicData(params: any[]) {}
 function System_Number(params: any[]) {}
 function System_ParentHash(params: any[]) {}
 function System_Digest(params: any[]) {}
-function System_Events(params: any[]) {}
+function System_Events(params: any[]) {
+    // this corresponds to
+    // i didnt manage to instanciate this type from an object, so using hex
+    // [
+    //     {
+    //       phase: { applyExtrinsic: 0 },
+    //       event: {
+    //         index: '0x0000',
+    //         data: [ { weight: 0, class: 'Mandatory', paysFee: 'Yes' } ]
+    //       },
+    //       topics: []
+    //     },
+    //     {
+    //       phase: { applyExtrinsic: 1 },
+    //       event: {
+    //         index: '0x0000',
+    //         data: [ { weight: 136000000, class: 'Mandatory', paysFee: 'Yes' } ]
+    //       },
+    //       topics: []
+    //     }
+    //   ]
+    return "0x080000000000000000000000000000000200000001000000000000321b0800000000020000";
+}
 function System_EventCount(params: any[]) {}
 function System_EventTopics(params: any[]) {}
 function System_LastRuntimeUpgrade(params: any[]) {}

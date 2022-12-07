@@ -5,6 +5,7 @@ import {
     advancePhase,
     author_submitAndWatchExtrinsic,
     author_unwatchExtrinsic,
+    chain_getBlock,
     encointer_getAggregatedAccountData,
     encointer_getAllBalances,
     encointer_getAllCommunities,
@@ -30,11 +31,12 @@ export async function handleMessage(
         let method = request.method;
 
         // if(method == "state_getStorage") {
-        //     await getStorage(api, request.params[0]);
+        //     await getStorage(api, request.params);
         // }
         // if(method == "state_subscribeStorage") {
-        //     await getStorage(api, request.params[0][0]);
+        //     await getStorage(api, request.params[0]);
         // }
+
         // relay(ws, data, encointer_rpc);
         // return
 
@@ -69,8 +71,10 @@ export async function handleMessage(
             case "advancePhase":
                 advancePhase(api, ws, data);
                 break;
-            case "chain_getBlockHash":
             case "chain_getBlock":
+                chain_getBlock(api, ws, data);
+                break;
+            case "chain_getBlockHash":
             case "chain_getFinalizedHead":
             case "chain_getHeader":
             case "state_getRuntimeVersion":
